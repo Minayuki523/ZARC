@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { save } from '@tauri-apps/plugin-dialog';
   import { app } from '../stores/app.svelte';
   import { task } from '../stores/task.svelte';
   import { toasts } from '../stores/toast.svelte';
-  import { api, pickPath, type OperationReport, type OutputKind } from '../lib/api';
+  import { api, pickPath, pickPaths, type OperationReport, type OutputKind } from '../lib/api';
   import { emptyToNull, formatBytes, formatCount, pathBaseName } from '../lib/format';
   import { t } from '../lib/i18n/index.svelte';
   import OutputPreview from './OutputPreview.svelte';
@@ -21,6 +20,7 @@
   import ResultCard from './ResultCard.svelte';
 
   let output = $state('');
+  let archiveName = $state('');
   let outputKind = $state<OutputKind>('archive');
   let splitSize = $state(0);
   /** 0 表示由后端按核心数决定。 / 0 lets the backend decide based on the core count. */
@@ -38,6 +38,9 @@
   // The app store holds the only copy of the data source; file dialogs and
   // drag-and-drop both write back to it.
   let source = $derived(app.compressSource);
+  let sources = $derived(app.compressSources);
+  let multiple = $derived(sources.length > 1);
+  let sourceInfo = $derived(new Map(app.compressItems.map((item) => [item.path, item])));
   let kind = $derived(app.compressKind);
   let info = $derived(app.compressInfo);
   // 压缩等级也存于 store，基准视图的「使用推荐等级」可直接落到这里。
@@ -94,23 +97,22 @@
   });
 
   async function pickFile(): Promise<void> {
-    const selected = await pickPath({ title: t('compress.dialog.pickFile') });
-    if (selected) app.setCompressSource(selected, 'file');
+    const selected = await pickPaths({ title: t('compress.dialog.pickFile') });
+    if (selected.length) void app.setCompressSources([...sources, ...selected]);
   }
 
   async function pickDirectory(): Promise<void> {
-    const selected = await pickPath({ title: t('compress.dialog.pickFolder'), directory: true });
-    if (selected) app.setCompressSource(selected, 'folder');
+    const selected = await pickPaths({ title: t('compress.dialog.pickFolder'), directory: true });
+    if (selected.length) void app.setCompressSources([...sources, ...selected], 'folder');
   }
 
   async function pickOutput(): Promise<void> {
-    const selected = await save({
-      title: t('compress.dialog.outputTitle'),
-      filters: isSfx
-        ? [{ name: t('compress.filter.sfx'), extensions: ['exe'] }]
-        : [{ name: t('compress.filter.archive'), extensions: [kind === 'folder' ? (encrypt ? 'tar.zst.enc' : 'tar.zst') : (encrypt ? 'zst.enc' : 'zst')] }]
-    });
-    if (typeof selected === 'string') output = selected;
+    const selected = await pickPath({ title: t('compress.dialog.pickOutputFolder'), directory: true });
+    if (selected) output = selected;
+  }
+
+  function removeSource(path: string): void {
+    void app.setCompressSources(sources.filter((source) => source !== path));
   }
 
   async function submit(): Promise<void> {
@@ -127,10 +129,13 @@
       return;
     }
 
-    const ok = await task.run('compress', t('compress.running', { name: pathBaseName(source) }), async () => {
+    const ok = await task.run('compress', t('compress.running', { name: multiple ? t('compress.selectionCount', { count: sources.length }) : pathBaseName(source) }), async () => {
       report = await api.compress({
         sourcePath: source,
-        outputPath: emptyToNull(output),
+        sourcePaths: sources,
+        archiveName: emptyToNull(archiveName),
+        outputDirectory: emptyToNull(output),
+        outputPath: null,
         outputKind,
         level,
         includeRootDir,
@@ -158,7 +163,7 @@
 <div class="flex flex-col gap-4 animate-[var(--animate-rise)]">
   <Card title={t('compress.sourceCard.title')} subtitle={t('compress.sourceCard.subtitle')} icon="folder">
     {#snippet actions()}
-      <Tag tone={source ? 'accent' : 'neutral'}>{source ? t(kind === 'folder' ? 'kind.folder' : 'kind.file') : t('notSelected')}</Tag>
+      <Tag tone={source ? 'accent' : 'neutral'}>{multiple ? t('compress.selectionCount', { count: sources.length }) : source ? t(kind === 'folder' ? 'kind.folder' : 'kind.file') : t('notSelected')}</Tag>
     {/snippet}
 
     <div class="flex flex-col gap-4">
@@ -174,6 +179,25 @@
             {t('compress.pathMissing')}
           {/if}
         {/snippet}
+        {#if multiple}
+          <div class="flex items-center gap-2">
+            <Button variant="ghost" size="sm" icon="file" onclick={pickFile}>{t('compress.addFiles')}</Button>
+            <Button variant="ghost" size="sm" icon="folder" onclick={pickDirectory}>{t('compress.addFolders')}</Button>
+            <Button variant="subtle" size="sm" icon="close" aria-label={t('compress.clearSourcesLabel')} onclick={() => app.setCompressSources([])}>{t('compress.clearSources')}</Button>
+          </div>
+          <ul class="mt-3 flex max-h-52 flex-col divide-y divide-line overflow-y-auto rounded-control border border-line bg-inset">
+            {#each sources as path (path)}
+              <li class="flex items-center gap-3 px-3 py-2 [content-visibility:auto] [contain-intrinsic-size:3.5rem]">
+                <Icon name={sourceInfo.get(path)?.isDir ? 'folder' : 'file'} size={17} class="shrink-0 text-fg-faint" />
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-medium text-fg">{pathBaseName(path)}</span>
+                  <span class="block truncate text-xs text-fg-faint" title={path}>{path}</span>
+                </span>
+                <Button variant="subtle" size="sm" icon="close" aria-label={t('compress.removeSource', { name: pathBaseName(path) })} onclick={() => removeSource(path)}>{t('compress.remove')}</Button>
+              </li>
+            {/each}
+          </ul>
+        {:else}
         <PathInput
           value={source}
           onCommit={(next) => app.setCompressSource(next, kind)}
@@ -182,17 +206,21 @@
           placeholder={t('compress.sourcePlaceholder')}
         >
           {#snippet actions()}
-            <Button variant="ghost" size="sm" icon="file" onclick={pickFile}>{t('kind.file')}</Button>
-            <Button variant="ghost" size="sm" icon="folder" onclick={pickDirectory}>{t('kind.folder')}</Button>
+            <Button variant="ghost" size="sm" icon="file" onclick={pickFile}>{t('compress.addFiles')}</Button>
+            <Button variant="ghost" size="sm" icon="folder" onclick={pickDirectory}>{t('compress.addFolders')}</Button>
           {/snippet}
         </PathInput>
+        {/if}
       </Field>
 
+      <Field label={t('compress.archiveName')} hint={t('compress.archiveNameHint')}>
+        <PathInput bind:value={archiveName} icon="archive" placeholder={t('compress.archiveNamePlaceholder')} />
+      </Field>
       <Field
-        label={t('field.outputPath')}
+        label={t('compress.outputDirectory')}
         hint={t('compress.outputHint')}
       >
-        <PathInput bind:value={output} icon="archive" placeholder={t('compress.outputPlaceholder')}>
+        <PathInput bind:value={output} icon="folder" placeholder={t('compress.outputPlaceholder')}>
           {#snippet actions()}
             <Button variant="ghost" size="sm" icon="folder" onclick={pickOutput}>{t('browse')}</Button>
           {/snippet}
@@ -201,7 +229,7 @@
     </div>
   </Card>
 
-  <OutputPreview {source} {output} encrypted={encrypt} {outputKind} splitSizeMib={splitSize} />
+  <OutputPreview {source} output="" sourcePaths={sources} {archiveName} outputDirectory={output} encrypted={encrypt} {outputKind} splitSizeMib={splitSize} />
 
   <Card title={t('compress.settingsCard.title')} subtitle={t('compress.settingsCard.subtitle')} icon="sliders">
     <div class="flex flex-col gap-5">
@@ -213,7 +241,7 @@
 
       <Field label={t('compress.level')} hint={levelHint}>
         {#snippet aside()}
-          <span class="text-sm font-bold text-accent tabular-nums">{level}</span>
+          <span class="text-sm font-bold text-accent-ink tabular-nums">{level}</span>
         {/snippet}
         <Slider
           bind:value={app.compressLevel}
@@ -230,7 +258,7 @@
           label={t('compress.includeRootDir')}
           description={t('compress.includeRootDirDesc')}
           icon="layers"
-          disabled={kind === 'file'}
+          disabled={multiple || kind === 'file'}
         />
         <Toggle
           bind:checked={encrypt}

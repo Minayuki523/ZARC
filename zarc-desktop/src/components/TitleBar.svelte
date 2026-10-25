@@ -33,7 +33,6 @@
     ondblclick={() => win.toggleMaximize()}
     role="presentation"
   >
-    <span class="text-[0.65rem] font-semibold tracking-[0.22em] text-fg-faint">ZARC STUDIO</span>
   </div>
 
   <div class="flex items-stretch">

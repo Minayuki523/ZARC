@@ -77,6 +77,9 @@ export interface BenchmarkReport {
 
 export interface CompressRequest {
   sourcePath: string;
+  sourcePaths?: string[];
+  archiveName?: string | null;
+  outputDirectory?: string | null;
   outputPath: string | null;
   outputKind: OutputKind;
   level: number;
@@ -85,7 +88,7 @@ export interface CompressRequest {
   splitSizeMib: number | null;
   enableLogging: boolean;
   deleteSourceAfter: boolean;
-  /** zstd 工作线程数；null 表示让后端使用全部核心。 / Number of zstd worker threads; null lets the backend use all cores. */
+  /** 压缩线程数；null 按数据规模自动分配。 / Compression threads; null scales the count to the input size. */
   threads: number | null;
 }
 
@@ -134,7 +137,7 @@ export const api = {
   getEmbeddedInfo: () =>
     invoke<EmbeddedArchiveInfo | null>('get_embedded_archive_info'),
   inspectPath: (path: string, measure = true) => invoke<PathInfo>('inspect_path', { path, measure }),
-  previewOutput: (request: { sourcePath: string; outputPath: string | null; decompress: boolean; encrypted: boolean; outputKind?: OutputKind; splitSizeMib?: number | null }) =>
+  previewOutput: (request: { sourcePath: string; sourcePaths?: string[]; archiveName?: string | null; outputDirectory?: string | null; outputPath: string | null; decompress: boolean; encrypted: boolean; outputKind?: OutputKind; splitSizeMib?: number | null }) =>
     invoke<string>('preview_output_path', { request }),
   revealOutput: (path: string) => invoke<void>('reveal_output', { path }),
   openUrl: (url: string) => invoke<void>('open_url', { url }),
@@ -156,4 +159,10 @@ export async function pickPath(options: {
     filters: options.filters
   });
   return typeof selected === 'string' ? selected : null;
+}
+
+/** 支持多选的文件或目录选择器。 / Multi-select file or folder picker. */
+export async function pickPaths(options: { title: string; directory?: boolean }): Promise<string[]> {
+  const selected = await openDialog({ ...options, multiple: true });
+  return selected === null ? [] : Array.isArray(selected) ? selected : [selected];
 }

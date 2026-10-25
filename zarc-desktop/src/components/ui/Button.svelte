@@ -41,11 +41,11 @@
 
   const variants: Record<Variant, string> = {
     primary:
-      'bg-accent text-accent-fg shadow-[var(--shadow-glow)] hover:bg-accent-strong hover:-translate-y-px',
+      'border border-accent-edge bg-accent text-accent-fg shadow-[var(--shadow-glow)] hover:bg-accent-strong hover:-translate-y-px',
     danger:
       'bg-danger text-white shadow-[0_8px_22px_-10px_var(--color-danger)] hover:brightness-110 hover:-translate-y-px',
     ghost:
-      'border border-line-strong bg-panel-solid text-fg-soft hover:-translate-y-px hover:border-accent/60 hover:text-fg',
+      'border border-line-strong bg-panel-solid text-fg-soft hover:-translate-y-px hover:border-accent-ink/60 hover:text-fg',
     subtle: 'bg-transparent text-fg-soft hover:bg-inset hover:text-fg'
   };
 </script>

@@ -20,7 +20,9 @@ class AppStore {
   // 跨视图共享的数据源；这是唯一的真源，视图不再各自保留副本。
   // Data sources shared across views; this is the single source of truth, and
   // views no longer keep their own copies.
-  compressSource = $state('');
+  compressSources = $state<string[]>([]);
+  compressItems = $state<PathInfo[]>([]);
+  get compressSource(): string { return this.compressSources[0] ?? ''; }
   compressKind = $state<PathKind>('file');
   decompressSource = $state('');
   benchmarkSource = $state('');
@@ -49,9 +51,47 @@ class AppStore {
   }
 
   setCompressSource(path: string, kind: PathKind): Promise<PathInfo | null> {
-    this.compressSource = path;
-    this.compressKind = kind;
-    return this.#measureCompressSource(path);
+    return this.setCompressSources(path ? [path] : [], kind);
+  }
+
+  async setCompressSources(paths: string[], kind: PathKind = 'file'): Promise<PathInfo | null> {
+    const seq = ++this.#inspectSeq;
+    this.compressSources = [...new Set(paths.map((path) => path.trim()).filter(Boolean))];
+    this.compressKind = this.compressSources.length > 1 ? 'folder' : kind;
+    this.compressInfo = null;
+    this.compressItems = [];
+    this.compressInfoLoading = this.compressSources.length > 0;
+    if (!this.compressSources.length) {
+      void api.inspectPath('').catch(() => {});
+      return null;
+    }
+    try {
+      const items: PathInfo[] = [];
+      const started = performance.now();
+      for (const path of this.compressSources) {
+        const info = await api.inspectPath(path);
+        if (seq !== this.#inspectSeq) return null;
+        items.push(info);
+        if (performance.now() - started > 2000) break;
+      }
+      const first = items[0];
+      const multiple = this.compressSources.length > 1;
+      this.compressItems = items;
+      this.compressKind = multiple || first.isDir ? 'folder' : 'file';
+      this.compressInfo = {
+        path: first.path,
+        exists: items.every((item) => item.exists),
+        isDir: multiple || first.isDir,
+        sizeBytes: items.reduce((sum, item) => sum + item.sizeBytes, 0),
+        fileCount: items.reduce((sum, item) => sum + item.fileCount, 0),
+        truncated: items.length < this.compressSources.length || items.some((item) => item.truncated)
+      };
+      return this.compressInfo;
+    } catch {
+      return null;
+    } finally {
+      if (seq === this.#inspectSeq) this.compressInfoLoading = false;
+    }
   }
 
   setDecompressSource(path: string): void {
@@ -68,35 +108,6 @@ class AppStore {
     this.compressLevel = level;
     this.setView('compress');
     this.setStatus(t('status.recommendApplied', { level }), 'success');
-  }
-
-  async #measureCompressSource(path: string): Promise<PathInfo | null> {
-    const seq = ++this.#inspectSeq;
-    if (!path) {
-      void api.inspectPath('').catch(() => {});
-      this.compressInfo = null;
-      this.compressInfoLoading = false;
-      return null;
-    }
-    this.compressInfo = null;
-    this.compressInfoLoading = true;
-    try {
-      const info = await api.inspectPath(path);
-      if (seq !== this.#inspectSeq) return null;
-      this.compressInfo = info;
-      if (info.exists) {
-        this.compressKind = info.isDir ? 'folder' : 'file';
-      }
-      return info;
-    } catch {
-      if (seq !== this.#inspectSeq) return null;
-      this.compressInfo = null;
-      return null;
-    } finally {
-      if (seq === this.#inspectSeq) {
-        this.compressInfoLoading = false;
-      }
-    }
   }
 
   async initSfx(): Promise<void> {

@@ -26,7 +26,7 @@
     {/each}
 
     {#if benchRunning}
-      <div class="flex items-center gap-2 text-xs font-medium text-accent">
+      <div class="flex items-center gap-2 text-xs font-medium text-accent-ink">
         <Spinner size={13} />
         {t('shell.benchmarkWorking')}
       </div>

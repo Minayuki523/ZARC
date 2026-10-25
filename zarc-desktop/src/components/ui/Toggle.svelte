@@ -42,7 +42,7 @@
       : 'bg-inset-strong'}"
   >
     <span
-      class="absolute top-[0.175rem] left-[0.175rem] h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-300 {checked
+      class="absolute top-[0.175rem] left-[0.175rem] h-4 w-4 rounded-full {checked && !danger ? 'bg-accent-fg' : 'bg-white'} shadow-sm transition-transform duration-300 {checked
         ? 'translate-x-[1.15rem]'
         : ''}"
     ></span>

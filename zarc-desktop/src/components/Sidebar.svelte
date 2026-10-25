@@ -7,8 +7,10 @@
   import Icon, { type IconName } from './ui/Icon.svelte';
   import Spinner from './ui/Spinner.svelte';
   import AboutDialog from './AboutDialog.svelte';
+  import ColorDialog from './ColorDialog.svelte';
 
   let aboutOpen = $state(false);
+  let colorsOpen = $state(false);
 
   let navItems = $derived<
     { id: ViewId; label: string; hint: string; icon: IconName }[]
@@ -44,18 +46,18 @@
         onclick={() => app.setView(item.id)}
         title={item.hint}
         class="group relative flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm transition-colors duration-200 {active
-          ? 'bg-accent-wash text-accent'
+          ? 'bg-accent-wash text-accent-ink'
           : 'text-fg-soft hover:bg-inset hover:text-fg'}"
       >
         <!-- 细指示条比方块填充更克制，且保留图标自身颜色。 / A slim indicator bar is subtler than a filled block and keeps the icon's own color. -->
         <span
-          class="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent transition-opacity duration-200 {active
+          class="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-ink transition-opacity duration-200 {active
             ? 'opacity-100'
             : 'opacity-0'}"
         ></span>
 
         {#if running}
-          <Spinner size={16} class="text-accent" />
+          <Spinner size={16} class="text-accent-ink" />
         {:else}
           <Icon name={item.icon} size={17} />
         {/if}
@@ -67,6 +69,14 @@
   </nav>
 
   <div class="mt-auto flex flex-col gap-1 border-t border-line pt-3">
+    <button
+      type="button"
+      onclick={() => (colorsOpen = true)}
+      class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg-soft transition-colors hover:bg-inset hover:text-fg"
+    >
+      <span class="h-[17px] w-[17px] rounded-full border border-line-strong" style:background={theme.selectedColor?.hex ?? 'var(--zarc-accent)'}></span>
+      <span class="flex-1 text-left font-medium">{t('shell.colors.title')}</span>
+    </button>
     <button
       type="button"
       onclick={() => (aboutOpen = true)}
@@ -90,4 +100,5 @@
   </div>
 
   <AboutDialog open={aboutOpen} onClose={() => (aboutOpen = false)} />
+  {#if colorsOpen}<ColorDialog open={colorsOpen} onClose={() => (colorsOpen = false)} />{/if}
 </aside>

@@ -13,7 +13,7 @@
   let { tone = 'accent', icon, children }: Props = $props();
 
   const tones: Record<Tone, string> = {
-    accent: 'bg-accent-wash text-accent',
+    accent: 'bg-accent-wash text-accent-ink',
     neutral: 'bg-inset text-fg-soft',
     success: 'bg-success/12 text-success',
     warning: 'bg-warning/15 text-warning',

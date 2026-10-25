@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { theme } from './stores/theme.svelte';
+  import { colorTokens } from './lib/color-tokens';
   import { app } from './stores/app.svelte';
   import { initProgressListener } from './lib/progress';
   import { initDragDrop } from './lib/dragdrop.svelte';
@@ -18,9 +19,21 @@
 
   let isSfx = $derived(app.isSfx);
   let view = $derived(isSfx ? 'decompress' : app.currentView);
+  let visited = $state({ compress: false, decompress: false, benchmark: false });
+  $effect(() => { visited[view] = true; });
 
   $effect(() => {
     document.documentElement.setAttribute('data-theme', theme.current);
+    const color = theme.selectedColor;
+    if (!color) return;
+    const root = document.documentElement;
+    const tokens = colorTokens(color.hex, theme.current);
+    root.setAttribute('data-color', color.id);
+    for (const [name, value] of Object.entries(tokens)) root.style.setProperty(name, value);
+    return () => {
+      root.removeAttribute('data-color');
+      for (const name of Object.keys(tokens)) root.style.removeProperty(name);
+    };
   });
 
   onMount(() => {
@@ -51,19 +64,7 @@
 </script>
 
 <div class="relative h-full w-full overflow-hidden bg-canvas">
-  <!-- 背景极光：三个低饱和光斑奠定整体氛围；不参与命中测试。 / Background aurora: three low-saturation blobs set the overall mood; excluded from hit testing. -->
-  <div
-    class="aurora -top-48 -left-40 h-[34rem] w-[34rem]"
-    style="background: var(--zarc-aurora-1)"
-  ></div>
-  <div
-    class="aurora -right-52 top-1/3 h-[30rem] w-[30rem]"
-    style="background: var(--zarc-aurora-2)"
-  ></div>
-  <div
-    class="aurora bottom-[-14rem] left-1/3 h-[26rem] w-[26rem]"
-    style="background: var(--zarc-aurora-3)"
-  ></div>
+  <div class="ambient" aria-hidden="true"></div>
 
   <div class="relative z-10 flex h-full flex-col">
     <TitleBar />
@@ -90,9 +91,9 @@
               <button class="control" onclick={() => app.initSfx()}>{t('audit.retry')}</button>
             </div>
           {:else}
-            <div hidden={view !== 'compress'}><CompressView /></div>
-            <div hidden={view !== 'decompress'}><DecompressView /></div>
-            <div hidden={view !== 'benchmark'}><BenchmarkView /></div>
+            {#if !isSfx && visited.compress}<div hidden={view !== 'compress'}><CompressView /></div>{/if}
+            {#if visited.decompress}<div hidden={view !== 'decompress'}><DecompressView /></div>{/if}
+            {#if !isSfx && visited.benchmark}<div hidden={view !== 'benchmark'}><BenchmarkView /></div>{/if}
           {/if}
         </div>
       </main>

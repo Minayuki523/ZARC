@@ -20,7 +20,15 @@ function guessKind(path: string): PathKind {
 }
 
 let routeSequence = 0;
-async function route(path: string): Promise<void> {
+async function route(paths: string[]): Promise<void> {
+  if (paths.length > 1) {
+    ++routeSequence;
+    void app.setCompressSources(paths);
+    app.setView('compress');
+    toasts.info(t('compress.drop.multipleLoaded', { count: paths.length }));
+    return;
+  }
+  const path = paths[0];
   const sequence = ++routeSequence;
   const info = await api.inspectPath(path, false).catch(() => null);
   if (sequence !== routeSequence) return;
@@ -63,10 +71,7 @@ export async function initDragDrop(): Promise<() => void> {
       dropOverlay.visible = false;
       dropOverlay.count = 0;
       if (payload.paths.length === 0) return;
-      if (payload.paths.length > 1) {
-        toasts.warn(t('toast.onePathOnly'), t('compress.drop.multiIgnored', { count: payload.paths.length - 1 }));
-      }
-      void route(payload.paths[0]);
+      void route(payload.paths);
     }
   });
 }

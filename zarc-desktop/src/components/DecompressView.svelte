@@ -33,16 +33,6 @@
   let running = $derived(task.activeKind === 'decompress');
 
   let sourceError = $derived(touched && !source ? t('decompress.error.noSource') : undefined);
-  let outputError = $derived(
-    touched && isSfx && !output.trim() ? t('decompress.error.outputRequired') : undefined
-  );
-
-  let outputPlaceholder = $derived(
-    isSfx && app.sfxInfo
-      ? t('decompress.outputPlaceholder.sfx', { name: app.sfxInfo.defaultExtractName })
-      : t('decompress.outputPlaceholder.default')
-  );
-
   $effect(() => {
     if (source !== listedSource) browserReport = null;
   });
@@ -98,11 +88,6 @@
     if (!isSfx && !source) {
       app.setStatus(t('decompress.error.archiveRequired'), 'error');
       toasts.warn(t('toast.noArchive'), t('decompress.hint.noArchive'));
-      return;
-    }
-    if (isSfx && !output.trim()) {
-      app.setStatus(t('decompress.error.outputFolderRequired'), 'error');
-      toasts.warn(t('decompress.toast.noOutput'), t('decompress.hint.noOutput'));
       return;
     }
     if (isSfx && app.sfxInfo && !app.sfxInfo.payloadReady) await app.initSfx();
@@ -185,12 +170,11 @@
         </PathInput>
       </Field>
 
-      <Field label={t('decompress.outputFolder')} error={outputError}>
+      <Field label={t('decompress.outputFolder')}>
         <PathInput
           bind:value={output}
           icon="folder"
-          invalid={Boolean(outputError)}
-          placeholder={outputPlaceholder}
+          placeholder={t('decompress.outputPlaceholder.default')}
         >
           {#snippet actions()}
             <Button variant="ghost" size="sm" icon="folder" onclick={pickOutput}>{t('browse')}</Button>

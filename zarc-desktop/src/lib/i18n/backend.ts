@@ -34,6 +34,15 @@ interface RegexRule {
 }
 
 const PREFIX_RULES: PrefixRule[] = [
+  { p: '压缩包名称不能包含路径分隔符', en: 'Archive names cannot contain path separators' },
+  { p: '请选择待压缩的文件或目录', en: 'Select files or folders to compress' },
+  { p: '取样期间源文件被截断', en: 'The source file was truncated while sampling' },
+  { p: '样本大小不足以容纳目录条目', en: 'The sample size is too small for the directory entries' },
+  { p: '无法读取基准测试源文件', en: 'Failed to read the benchmark source file' },
+  { p: '无法读取目录样本文件', en: 'Failed to read a sampled file' },
+  { p: '读取归档条目失败', en: 'Failed to read an archive entry' },
+  { p: '解包归档条目失败', en: 'Failed to extract an archive entry' },
+  { p: '恢复目录属性失败', en: 'Failed to restore directory attributes' },
   { p: '遍历待压缩目录失败，归档已中止', en: 'Source traversal failed; archiving stopped' },
   { p: '验证归档尾部失败', en: 'Archive tail validation failed' },
   { p: '归档超过 100000 条预览上限，请直接解压', en: 'Archive exceeds the 100,000-entry preview limit; extract it directly' },

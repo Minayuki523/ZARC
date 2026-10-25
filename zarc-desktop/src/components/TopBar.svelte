@@ -3,10 +3,13 @@
   import { theme } from '../stores/theme.svelte';
   import { t, toggleLocale, currentLocale } from '../lib/i18n/index.svelte';
   import Icon from './ui/Icon.svelte';
+  import ColorDialog from './ColorDialog.svelte';
+
+  let colorsOpen = $state(false);
 
   let view = $derived(app.currentView);
   let title = $derived(app.isSfx ? t('shell.sfx.modeTitle') : t(`shell.view.${view}.title`));
-  let subtitle = $derived(app.isSfx ? null : t(`shell.view.${view}.subtitle`));
+  let subtitle = $derived(!app.isSfx && view === 'benchmark' ? t('shell.view.benchmark.subtitle') : null);
 </script>
 
 <header class="flex items-start justify-between gap-3 px-1">
@@ -33,6 +36,15 @@
     {#if app.isSfx}
       <button
         type="button"
+        onclick={() => (colorsOpen = true)}
+        aria-label={t('shell.colors.title')}
+        title={t('shell.colors.title')}
+        class="panel flex h-8 w-8 items-center justify-center rounded-pill"
+      >
+        <span class="h-4 w-4 rounded-full border border-line-strong" style:background={theme.selectedColor?.hex ?? 'var(--zarc-accent)'}></span>
+      </button>
+      <button
+        type="button"
         onclick={() => theme.toggle()}
         aria-label={t('shell.themeToggle')}
         title={t('shell.themeToggle')}
@@ -43,3 +55,5 @@
     {/if}
   </div>
 </header>
+
+{#if app.isSfx && colorsOpen}<ColorDialog open={colorsOpen} onClose={() => (colorsOpen = false)} />{/if}

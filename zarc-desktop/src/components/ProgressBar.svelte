@@ -31,7 +31,7 @@
   let indeterminate = $derived(!progress.done && (!progress.started || progress.totalBytes === 0 || progress.phase !== 'processing'));
 
   let barTone = $derived(
-    progress.error ? 'bg-danger' : progress.done ? 'bg-success' : 'bg-accent'
+    progress.error ? 'bg-danger' : progress.done ? 'bg-success' : 'bg-accent-ink'
   );
 </script>
 
@@ -56,7 +56,7 @@
 
   <div class="relative h-1.5 w-full overflow-hidden rounded-pill bg-inset-strong">
     {#if indeterminate}
-      <div class="absolute inset-y-0 left-0 w-1/3 animate-[var(--animate-indeterminate)] rounded-pill bg-accent"></div>
+      <div class="absolute inset-y-0 left-0 w-1/3 animate-[var(--animate-indeterminate)] rounded-pill bg-accent-ink"></div>
     {:else}
       <div
         class="absolute inset-y-0 left-0 overflow-hidden rounded-pill transition-[width] duration-300 ease-out {barTone}"

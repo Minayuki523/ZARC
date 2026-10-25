@@ -141,9 +141,10 @@ fn unreadable_subtree_aborts_directory_compression() {
         .expect("output sink");
     let reporter = ProgressReporter::new(None, "compress", 9);
     let job = CompressJob {
+        collection: None,
+        directory_plan: None,
         level: 1,
         include_root_dir: false,
-        source_bytes: 0,
         reporter: &reporter,
         state: None,
         threads: Some(1),

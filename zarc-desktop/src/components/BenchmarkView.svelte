@@ -15,9 +15,9 @@
   import Icon from './ui/Icon.svelte';
 
   let minLevel = $state(1);
-  let maxLevel = $state(12);
-  let iterations = $state(2);
-  let sampleSize = $state(64);
+  let maxLevel = $state(19);
+  let iterations = $state(3);
+  let sampleSize = $state(256);
   let threads = $state(0);
   let report = $state<BenchmarkReport | null>(null);
   let touched = $state(false);
@@ -32,7 +32,7 @@
   let sourceError = $derived(touched && !source ? t('benchmark.error.noSource') : undefined);
   let rangeError = $derived(minLevel > maxLevel ? t('benchmark.error.range') : undefined);
 
-  let estimatedRuns = $derived(Math.max(0, maxLevel - minLevel + 1) * iterations);
+  let estimatedRuns = $derived(Math.max(0, maxLevel - minLevel + 1) * (iterations + 1));
 
   // 得分/吞吐/大小的极值，用于归一化条形图。 / Extremes of score, throughput, and size, used to normalize the bars.
   let bestThroughput = $derived(
@@ -196,7 +196,7 @@
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <div class="rounded-control bg-accent-wash px-3 py-3 text-center">
             <div class="text-[0.7rem] text-fg-faint">{t('benchmark.recommendedLevel')}</div>
-            <div class="mt-1 text-xl font-extrabold text-accent tabular-nums">
+            <div class="mt-1 text-xl font-extrabold text-accent-ink tabular-nums">
               L{rep.recommendedLevel}
             </div>
           </div>
@@ -244,7 +244,7 @@
                 : 'hover:bg-inset'}"
             >
               <span
-                class="w-9 text-xs font-bold tabular-nums {best ? 'text-accent' : 'text-fg-soft'}"
+                class="w-9 text-xs font-bold tabular-nums {best ? 'text-accent-ink' : 'text-fg-soft'}"
               >
                 L{row.level}
               </span>
@@ -253,7 +253,7 @@
                 <div class="h-2 flex-1 overflow-hidden rounded-pill bg-inset-strong">
                   <div
                     class="h-full rounded-pill transition-[width] duration-500 {best
-                      ? 'bg-accent'
+                      ? 'bg-accent-ink'
                       : 'bg-fg-faint'}"
                     style="width: {ratioWidth(row.ratioPercent)}%"
                   ></div>

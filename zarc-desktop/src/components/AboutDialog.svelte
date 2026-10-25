@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getVersion } from '@tauri-apps/api/app';
   import { api } from '../lib/api';
+  import { project } from '../lib/project';
   import { normalizeError } from '../lib/format';
   import { t } from '../lib/i18n/index.svelte';
   import { toasts } from '../stores/toast.svelte';
@@ -12,10 +13,6 @@
     onClose: () => void;
   }
   let { open, onClose }: Props = $props();
-
-  const GITHUB_AUTHOR = 'https://github.com/1878580314';
-  const GITHUB_REPO = 'https://github.com/1878580314/ZARC';
-  const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 
   let version = $state('');
   let panelEl: HTMLElement | null = $state(null);
@@ -77,7 +74,7 @@
         </div>
       </div>
 
-      <Button icon="refresh" onclick={() => openLink(GITHUB_RELEASES)}>
+      <Button icon="refresh" onclick={() => openLink(project.releasesUrl)}>
         {t('about.checkUpdate')}
       </Button>
       <p class="-mt-3 text-[0.68rem] text-fg-faint">{t('about.updateHint')}</p>
@@ -85,22 +82,22 @@
       <div class="flex flex-col divide-y divide-line rounded-control bg-inset px-3">
         <button
           type="button"
-          onclick={() => openLink(GITHUB_AUTHOR)}
-          class="flex items-center gap-2.5 py-2.5 text-sm transition-colors hover:text-accent"
+          onclick={() => openLink(project.authorUrl)}
+          class="flex items-center gap-2.5 py-2.5 text-sm transition-colors hover:text-accent-ink"
         >
           <Icon name="github" size={16} />
           <span class="w-20 shrink-0 text-left text-fg-faint">{t('about.author')}</span>
-          <span class="min-w-0 flex-1 truncate text-left font-medium text-fg">1878580314</span>
+          <span class="min-w-0 flex-1 truncate text-left font-medium text-fg">{project.owner}</span>
           <Icon name="external" size={13} class="text-fg-faint" />
         </button>
         <button
           type="button"
-          onclick={() => openLink(GITHUB_REPO)}
-          class="flex items-center gap-2.5 py-2.5 text-sm transition-colors hover:text-accent"
+          onclick={() => openLink(project.repositoryUrl)}
+          class="flex items-center gap-2.5 py-2.5 text-sm transition-colors hover:text-accent-ink"
         >
           <Icon name="archive" size={16} />
           <span class="w-20 shrink-0 text-left text-fg-faint">{t('about.repository')}</span>
-          <span class="min-w-0 flex-1 truncate text-left font-medium text-fg">1878580314/ZARC</span>
+          <span class="min-w-0 flex-1 truncate text-left font-medium text-fg">{project.repository}</span>
           <Icon name="external" size={13} class="text-fg-faint" />
         </button>
       </div>

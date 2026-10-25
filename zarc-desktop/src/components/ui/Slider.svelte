@@ -51,7 +51,7 @@
         {@const offset = ((mark.at - min) / (max - min)) * 100}
         <span
           class="absolute -translate-x-1/2 whitespace-nowrap transition-colors {value === mark.at
-            ? 'font-semibold text-accent'
+            ? 'font-semibold text-accent-ink'
             : ''}"
           style="left: clamp(1.25rem, {offset}%, calc(100% - 1.25rem))"
         >
@@ -81,8 +81,8 @@
     border-radius: var(--radius-pill);
     background: linear-gradient(
       to right,
-      var(--zarc-accent) 0%,
-      var(--zarc-accent) var(--fill),
+      var(--zarc-accent-ink) 0%,
+      var(--zarc-accent-ink) var(--fill),
       var(--zarc-inset-strong) var(--fill),
       var(--zarc-inset-strong) 100%
     );
@@ -95,7 +95,7 @@
   .zarc-range::-moz-range-progress {
     height: 0.375rem;
     border-radius: var(--radius-pill);
-    background: var(--zarc-accent);
+    background: var(--zarc-accent-ink);
   }
 
   .zarc-range::-webkit-slider-thumb {
@@ -105,7 +105,7 @@
     margin-top: -0.375rem;
     border-radius: 50%;
     background: var(--zarc-panel-solid);
-    border: 3px solid var(--zarc-accent);
+    border: 3px solid var(--zarc-accent-ink);
     box-shadow: var(--zarc-shadow-soft);
     transition:
       transform 0.15s ease,
@@ -124,7 +124,7 @@
     height: 1.125rem;
     border-radius: 50%;
     background: var(--zarc-panel-solid);
-    border: 3px solid var(--zarc-accent);
+    border: 3px solid var(--zarc-accent-ink);
     box-shadow: var(--zarc-shadow-soft);
   }
 </style>

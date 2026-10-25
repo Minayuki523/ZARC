@@ -65,7 +65,7 @@
       tabindex={active ? 0 : -1}
       onclick={() => (value = option.value)}
       class="flex flex-1 items-center justify-center gap-2 rounded-[calc(var(--radius-control)-0.25rem)] px-3 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-200 disabled:pointer-events-none disabled:opacity-45 {active
-        ? 'bg-panel-solid text-accent shadow-[var(--shadow-soft)]'
+        ? 'bg-panel-solid text-accent-ink shadow-[var(--shadow-soft)]'
         : 'text-fg-faint hover:text-fg'}"
     >
       {#if option.icon}

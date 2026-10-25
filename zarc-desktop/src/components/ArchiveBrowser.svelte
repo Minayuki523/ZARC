@@ -102,7 +102,7 @@
 </script>
 
 {#snippet rowBody(row: Row)}
-  <span class="shrink-0 {row.isDir ? 'text-accent' : 'text-fg-faint'}">
+  <span class="shrink-0 {row.isDir ? 'text-accent-ink' : 'text-fg-faint'}">
     <Icon name={row.isDir ? 'folder' : (getFileIcon(row.name) as IconName)} size={16} />
   </span>
   <span class="min-w-0 flex-1 truncate font-medium text-fg" title={row.name}>{row.name}</span>
@@ -181,7 +181,7 @@
             class="rounded-control px-1.5 py-0.5 font-medium transition-colors {i ===
             crumbs.length - 1
               ? 'text-fg'
-              : 'text-fg-soft hover:bg-inset hover:text-accent'}"
+              : 'text-fg-soft hover:bg-inset hover:text-accent-ink'}"
           >
             {crumb.label}
           </button>

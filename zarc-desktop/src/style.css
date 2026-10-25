@@ -78,6 +78,8 @@
   --zarc-accent-soft: oklch(0.78 0.095 192);
   --zarc-accent-wash: oklch(0.62 0.128 192 / 0.11);
   --zarc-accent-fg: oklch(0.99 0.01 192);
+  --zarc-accent-ink: var(--zarc-accent);
+  --zarc-accent-edge: transparent;
 
   --zarc-success: oklch(0.6 0.135 156);
   --zarc-warning: oklch(0.66 0.145 72);
@@ -163,6 +165,8 @@
   --color-fg-faint: var(--zarc-fg-faint);
 
   --color-accent: var(--zarc-accent);
+  --color-accent-ink: var(--zarc-accent-ink);
+  --color-accent-edge: var(--zarc-accent-edge);
   --color-accent-strong: var(--zarc-accent-strong);
   --color-accent-soft: var(--zarc-accent-soft);
   --color-accent-wash: var(--zarc-accent-wash);
@@ -302,7 +306,7 @@
 
   /* 统一焦点环：键盘可访问性的基线；鼠标点击不会触发。 / Unified focus ring: the baseline for keyboard accessibility; not triggered by mouse clicks. */
   :focus-visible {
-    outline: 2px solid var(--zarc-accent);
+    outline: 2px solid var(--zarc-accent-ink);
     outline-offset: 2px;
   }
 }
@@ -322,14 +326,15 @@
     box-shadow: var(--zarc-shadow-soft);
   }
 
-  /* 背景极光：几个模糊光斑奠定整体氛围。 / Background aurora: a few blurred blobs that set the overall mood. */
-  .aurora {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(90px);
+  /* 静态渐变替代独立模糊图层。 / Static gradients replace separate blur layers. */
+  .ambient {
+    position: absolute;
+    inset: 0;
     pointer-events: none;
-    z-index: 0;
-    will-change: transform;
+    background:
+      radial-gradient(ellipse 38rem 32rem at 0% 0%, var(--zarc-aurora-1), transparent 75%),
+      radial-gradient(ellipse 34rem 30rem at 100% 48%, var(--zarc-aurora-2), transparent 75%),
+      radial-gradient(ellipse 32rem 28rem at 48% 110%, var(--zarc-aurora-3), transparent 75%);
   }
 
   /* 输入控件的统一外观；避免在十几处重复冗长的工具类字符串。 / Shared look for input controls; avoids repeating long utility strings in a dozen places. */
@@ -355,7 +360,7 @@
   }
   .control:focus {
     outline: none;
-    border-color: var(--zarc-accent);
+    border-color: var(--zarc-accent-ink);
     box-shadow: 0 0 0 3px var(--zarc-accent-wash);
   }
   .control:disabled {
@@ -402,7 +407,7 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .aurora {
+  .ambient {
     display: none;
   }
 }

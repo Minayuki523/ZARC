@@ -60,6 +60,9 @@ fn archive_request(
     split_size_mib: Option<u64>,
 ) -> CompressRequest {
     CompressRequest {
+        source_paths: Vec::new(),
+        archive_name: None,
+        output_directory: None,
         source_path: path_to_string(source),
         output_path: Some(path_to_string(output)),
         output_kind: Some(OutputKind::Archive),
@@ -70,6 +73,212 @@ fn archive_request(
         enable_logging: Some(false),
         delete_source_after: Some(false),
         threads: Some(1),
+    }
+}
+
+#[test]
+fn multiple_sources_roundtrip_with_name_encryption_and_volumes() {
+    for password in [None, Some("collection-password")] {
+        for split in [None, Some(1)] {
+            let temp = tempfile::tempdir().unwrap();
+            let first = temp.path().join("first.txt");
+            let directory = temp.path().join("documents");
+            write_file(&first, b"first file");
+            write_file(&directory.join("nested/second.txt"), b"second file");
+            fs::create_dir_all(directory.join("empty")).unwrap();
+            let destination = temp.path().join("archives");
+            let mut request = archive_request(&first, &destination, 3, false, password, split);
+            request.source_paths = vec![path_to_string(&first), path_to_string(&directory)];
+            request.output_path = None;
+            request.output_directory = Some(path_to_string(&destination));
+            request.archive_name = Some("我的备份".into());
+            let compressed = compress_archive_sync(request, None, None).unwrap();
+            let expected = format!(
+                "我的备份.tar.zst{}{}",
+                if password.is_some() { ".enc" } else { "" },
+                if split.is_some() { ".001" } else { "" }
+            );
+            assert_eq!(
+                Path::new(&compressed.output_path).file_name().unwrap(),
+                expected.as_str()
+            );
+            assert_eq!(compressed.source_bytes, 21);
+            let output = temp.path().join("restored");
+            let restored = decompress_archive_sync(
+                DecompressRequest {
+                    archive_path: compressed.output_path,
+                    output_path: Some(path_to_string(&output)),
+                    password: password.map(str::to_string),
+                },
+                None,
+                None,
+            )
+            .unwrap();
+            assert_eq!(restored.output_bytes, 21);
+            assert_eq!(fs::read(output.join("first.txt")).unwrap(), b"first file");
+            assert_eq!(
+                fs::read(output.join("documents/nested/second.txt")).unwrap(),
+                b"second file"
+            );
+            assert!(output.join("documents/empty").is_dir());
+            assert!(first.exists() && directory.exists());
+        }
+    }
+}
+
+#[test]
+fn collection_preserves_duplicate_names_and_omits_overlapping_inputs() {
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("one/report.txt");
+    let second = temp.path().join("two/report.txt");
+    write_file(&first, b"one");
+    write_file(&second, b"two");
+    let mut request = archive_request(
+        &first,
+        &temp.path().join("bundle.tar.zst"),
+        1,
+        false,
+        None,
+        None,
+    );
+    request.source_paths = vec![
+        path_to_string(&first),
+        path_to_string(&second),
+        path_to_string(&first),
+    ];
+    let archive = compress_archive_sync(request, None, None).unwrap();
+    assert_eq!(archive.source_bytes, 6);
+    let restored = temp.path().join("restored");
+    decompress_archive_sync(
+        DecompressRequest {
+            archive_path: archive.output_path,
+            output_path: Some(path_to_string(&restored)),
+            password: None,
+        },
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(fs::read(restored.join("report.txt")).unwrap(), b"one");
+    assert_eq!(fs::read(restored.join("report (2).txt")).unwrap(), b"two");
+
+    let parent = temp.path().join("one");
+    let selected = selected_sources(
+        &[
+            path_to_string(&first),
+            path_to_string(&parent),
+            path_to_string(&second),
+        ],
+        "",
+        None,
+    )
+    .unwrap();
+    assert_eq!(selected, vec![parent, second]);
+}
+
+#[test]
+fn collection_rejects_invalid_names_missing_sources_and_outputs_inside_inputs() {
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("first.txt");
+    let directory = temp.path().join("tree");
+    write_file(&first, b"keep first");
+    write_file(&directory.join("keep.txt"), b"keep tree");
+    for (name, output, extra) in [
+        ("../escape", temp.path().join("out"), directory.clone()),
+        ("backup", directory.join("inside"), directory.clone()),
+        (
+            "backup",
+            temp.path().join("out"),
+            temp.path().join("missing.txt"),
+        ),
+    ] {
+        let mut request = archive_request(&first, &output, 1, false, None, None);
+        request.output_path = None;
+        request.archive_name = Some(name.into());
+        request.output_directory = Some(path_to_string(&output));
+        request.source_paths = vec![path_to_string(&first), path_to_string(&extra)];
+        assert!(compress_archive_sync(request, None, None).is_err());
+        assert!(!output.exists());
+        assert_eq!(fs::read(&first).unwrap(), b"keep first");
+        assert_eq!(fs::read(directory.join("keep.txt")).unwrap(), b"keep tree");
+    }
+}
+
+#[test]
+fn collection_deletes_only_selected_sources_after_success() {
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("first.txt");
+    let second = temp.path().join("second.txt");
+    let keep = temp.path().join("keep.txt");
+    for source in [&first, &second, &keep] {
+        write_file(source, b"data");
+    }
+    let mut request = archive_request(
+        &first,
+        &temp.path().join("saved.tar.zst"),
+        1,
+        false,
+        None,
+        None,
+    );
+    request.source_paths = vec![path_to_string(&first), path_to_string(&second)];
+    request.delete_source_after = Some(true);
+    let archive = compress_archive_sync(request, None, None).unwrap();
+    assert!(Path::new(&archive.output_path).is_file());
+    assert!(!first.exists() && !second.exists());
+    assert_eq!(fs::read(keep).unwrap(), b"data");
+}
+
+#[test]
+fn blank_output_extracts_next_to_archive() {
+    for output_path in [None, Some(""), Some("  \t ")] {
+        for directory in [false, true] {
+            for password in [None, Some("pass123")] {
+                let temp = tempfile::tempdir().unwrap();
+                let source = temp.path().join("source");
+                let content = if directory {
+                    source.join("file.txt")
+                } else {
+                    source.clone()
+                };
+                write_file(&content, b"same-directory extraction");
+                let archive = temp.path().join(if directory {
+                    "result.tar.zst"
+                } else {
+                    "result.zst"
+                });
+                let archive = compress_archive_sync(
+                    archive_request(&source, &archive, 1, false, password, Some(1)),
+                    None,
+                    None,
+                )
+                .unwrap()
+                .output_path;
+
+                let report = decompress_archive_sync(
+                    DecompressRequest {
+                        archive_path: archive,
+                        output_path: output_path.map(str::to_string),
+                        password: password.map(str::to_string),
+                    },
+                    None,
+                    None,
+                )
+                .unwrap();
+                let expected = temp.path().join("result");
+                assert_eq!(Path::new(&report.output_path), expected);
+                assert_eq!(
+                    fs::read(if directory {
+                        expected.join("file.txt")
+                    } else {
+                        expected
+                    })
+                    .unwrap(),
+                    b"same-directory extraction"
+                );
+                assert_eq!(fs::read(&content).unwrap(), b"same-directory extraction");
+            }
+        }
     }
 }
 
@@ -864,15 +1073,139 @@ fn benchmark_sample_fills_requested_size() {
     // 9 MiB 文件上设 3 MiB 上限：从头/中/尾取样，结果应接近上限而非短读的量。
     // 3 MiB cap over a 9 MiB file: sampled from head/middle/tail, so we
     // should get very close to the cap rather than a short read's worth.
-    let sample = load_benchmark_sample(&source_path, 3 * 1024 * 1024).expect("sample");
-    assert_eq!(sample.len(), 3 * (1024 * 1024));
+    let sample = load_benchmark_sample(&source_path, 3 * 1024 * 1024, None).expect("sample");
+    assert_eq!(sample.data.len(), 3 * (1024 * 1024));
 }
 
 #[test]
 fn benchmark_honours_abort_between_chunks() {
     let state = AppState::new();
     state.request_abort();
-    let err = compress_to_count(&pseudo_random_bytes(8 * 1024 * 1024), 3, 1, Some(&state))
-        .expect_err("must abort");
+    let err = compress_to_count(
+        &BenchmarkSample {
+            data: pseudo_random_bytes(8 * 1024 * 1024),
+            source_bytes: 8 * 1024 * 1024,
+            is_directory: false,
+        },
+        3,
+        1,
+        Some(&state),
+    )
+    .expect_err("must abort");
     assert!(err.to_string().contains("终止"));
+}
+
+#[test]
+fn sample_remainders_and_large_source_hint_are_preserved() {
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("large.bin");
+    File::create(&source)
+        .unwrap()
+        .set_len(LDM_MIN_SOURCE_BYTES + 1)
+        .unwrap();
+    for limit in [0, 1, 2, 4, 5, 4 * 1024 * 1024 + 1] {
+        let sample = load_benchmark_sample(&source, limit, None).unwrap();
+        assert_eq!(sample.data.len(), limit);
+        assert_eq!(sample.source_bytes, LDM_MIN_SOURCE_BYTES + 1);
+        assert!(!sample.is_directory);
+    }
+}
+
+#[test]
+fn directory_sample_spans_the_tree_and_contains_tar_metadata() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("tree");
+    fs::create_dir(&root).unwrap();
+    let content = [vec![b'A'; 2048], vec![b'B'; 4096], vec![b'C'; 2048]].concat();
+    for index in 0..100 {
+        write_file(&root.join(format!("file-{index:03}.bin")), &content);
+    }
+    let sample = load_benchmark_sample(&root, 16 * 1024, None).unwrap();
+    assert!(sample.is_directory);
+    assert_eq!(sample.source_bytes, 100 * 8192);
+    assert!(sample.data.len() <= 16 * 1024);
+    let mut names = Vec::new();
+    for entry in tar::Archive::new(&sample.data[..]).entries().unwrap() {
+        let mut entry = entry.unwrap();
+        names.push(entry.path().unwrap().into_owned());
+        let mut data = Vec::new();
+        entry.read_to_end(&mut data).unwrap();
+        assert!(data.contains(&b'A') && data.contains(&b'B') && data.contains(&b'C'));
+    }
+    assert_eq!(names.first().unwrap(), Path::new("file-000.bin"));
+    assert_eq!(names.last().unwrap(), Path::new("file-099.bin"));
+}
+
+#[test]
+fn benchmark_ldm_uses_full_source_size() {
+    let block = pseudo_random_bytes(8 * 1024 * 1024);
+    let mut sample = BenchmarkSample {
+        data: block.repeat(3),
+        source_bytes: 24 * 1024 * 1024,
+        is_directory: false,
+    };
+    let plain = compress_to_count(&sample, 1, 1, None).unwrap();
+    sample.source_bytes = LDM_MIN_SOURCE_BYTES;
+    let with_ldm = compress_to_count(&sample, 1, 1, None).unwrap();
+    assert!(with_ldm < plain * 3 / 4, "plain={plain}, LDM={with_ldm}");
+}
+
+#[test]
+fn sampling_cancellation_and_truncation_abort() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("file.bin");
+    write_file(&path, &[1; 1024]);
+    let state = AppState::new();
+    let mut reader = SampledFile::new(File::open(&path).unwrap(), 1024, 1024, Some(&state));
+    reader.read_exact(&mut [0; 16]).unwrap();
+    state.request_abort();
+    assert!(reader
+        .read(&mut [0; 16])
+        .unwrap_err()
+        .to_string()
+        .contains("终止"));
+    assert!(load_benchmark_sample(temp.path(), 4096, Some(&state)).is_err());
+    let mut reader = SampledFile::new(File::open(&path).unwrap(), 1024, 1024, None);
+    File::create(&path).unwrap();
+    assert_eq!(
+        reader.read(&mut [0; 16]).unwrap_err().kind(),
+        io::ErrorKind::UnexpectedEof
+    );
+}
+
+#[test]
+fn tar_stream_count_handles_overwrites_and_hard_links() {
+    for hard_link in [false, true] {
+        let temp = tempfile::tempdir().unwrap();
+        let mut builder = tar::Builder::new(Vec::new());
+        for (name, data) in [
+            ("same.txt", b"first".as_slice()),
+            ("./same.txt", b"last content".as_slice()),
+        ] {
+            let mut header = tar::Header::new_gnu();
+            header.set_mode(0o644);
+            header.set_size(data.len() as u64);
+            header.set_cksum();
+            builder.append_data(&mut header, name, data).unwrap();
+        }
+        if hard_link {
+            let mut header = tar::Header::new_gnu();
+            header.set_entry_type(tar::EntryType::Link);
+            header.set_size(0);
+            builder
+                .append_link(&mut header, "linked.txt", "same.txt")
+                .unwrap();
+        }
+        let encoded = zstd::encode_all(&builder.into_inner().unwrap()[..], 1).unwrap();
+        let output = temp.path().join("output");
+        let bytes =
+            decompress_reader_transactionally(&encoded[..], ArchiveKind::TarZst, &output, None)
+                .unwrap();
+        assert_eq!(bytes, 12 * if hard_link { 2 } else { 1 });
+        assert_eq!(
+            bytes,
+            count_source_bytes_cancellable(&output, None).unwrap()
+        );
+        assert_eq!(fs::read(output.join("same.txt")).unwrap(), b"last content");
+    }
 }

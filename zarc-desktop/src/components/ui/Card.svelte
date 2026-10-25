@@ -23,7 +23,7 @@
       <div class="flex min-w-0 items-center gap-3">
         {#if icon}
           <span
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-accent-wash text-accent"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-accent-wash text-accent-ink"
           >
             <Icon name={icon} size={18} />
           </span>

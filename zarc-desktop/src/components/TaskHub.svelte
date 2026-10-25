@@ -30,7 +30,7 @@
    * Benchmark has no progress slot, only the "running / idle" pair.
    */
   function summary(slot: Slot): { text: string; tone: string } {
-    if (running === slot.kind) return { text: t('shell.running'), tone: 'text-accent' };
+    if (running === slot.kind) return { text: t('shell.running'), tone: 'text-accent-ink' };
     if (!slot.progress?.visible) return { text: t('shell.idle'), tone: 'text-fg-faint' };
     if (slot.progress.error) return { text: t('shell.failed'), tone: 'text-danger' };
     if (slot.progress.done) return { text: t('shell.done'), tone: 'text-success' };
@@ -48,8 +48,8 @@
   <div class="flex items-center justify-between px-2">
     <h2 class="text-[0.68rem] font-bold tracking-[0.12em] text-fg-faint uppercase">{t('shell.taskHub')}</h2>
     {#if task.busy}
-      <span class="flex items-center gap-1.5 text-[0.68rem] font-medium text-accent">
-        <span class="h-1.5 w-1.5 animate-[var(--animate-breathe)] rounded-full bg-accent"></span>
+      <span class="flex items-center gap-1.5 text-[0.68rem] font-medium text-accent-ink">
+        <span class="h-1.5 w-1.5 animate-[var(--animate-breathe)] rounded-full bg-accent-ink"></span>
         {t('shell.running')}
       </span>
     {/if}

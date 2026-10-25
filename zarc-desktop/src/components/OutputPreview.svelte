@@ -2,11 +2,11 @@
   import { api, type OutputKind } from '../lib/api';
   import { emptyToNull } from '../lib/format';
   import { t } from '../lib/i18n/index.svelte';
-  let { source, output, decompress = false, encrypted = false, outputKind = 'archive', splitSizeMib = 0 }:
-    { source: string; output: string; decompress?: boolean; encrypted?: boolean; outputKind?: OutputKind; splitSizeMib?: number } = $props();
+  let { source, output, decompress = false, encrypted = false, outputKind = 'archive', splitSizeMib = 0, sourcePaths = [], archiveName = '', outputDirectory = '' }:
+    { source: string; output: string; sourcePaths?: string[]; archiveName?: string; outputDirectory?: string; decompress?: boolean; encrypted?: boolean; outputKind?: OutputKind; splitSizeMib?: number } = $props();
   let resolved = $state('');
   $effect(() => {
-    const request = { sourcePath: source, outputPath: emptyToNull(output), decompress, encrypted, outputKind, splitSizeMib };
+    const request = { sourcePath: source, sourcePaths, archiveName: emptyToNull(archiveName), outputDirectory: emptyToNull(outputDirectory), outputPath: emptyToNull(output), decompress, encrypted, outputKind, splitSizeMib };
     let active = true;
     resolved = '';
     if (!source.trim()) return;

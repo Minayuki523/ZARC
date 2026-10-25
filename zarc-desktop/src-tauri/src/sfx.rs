@@ -54,19 +54,34 @@ pub(super) fn extract_embedded_archive_from_current_exe(
 pub(super) fn compress_sfx_archive_sync(
     request: CompressRequest,
     output: PathBuf,
-    enable_logging: bool,
-    delete_source_after: bool,
     reporter: ProgressReporter,
     state: Option<AppState>,
-    source_bytes: u64,
+    directory_plan: Option<&DirectoryPlan>,
+    collection: Option<&CollectionPlan>,
+    sources: &[PathBuf],
 ) -> Result<OperationReport> {
+    let enable_logging = request.enable_logging.unwrap_or(false);
+    let delete_source_after = request.delete_source_after.unwrap_or(false);
     if !cfg!(target_os = "windows") {
         let err = anyhow!("Windows 自解压 EXE 仅能在 Windows 构建环境中生成");
         reporter.fail(full_error_chain(&err));
         return Err(err);
     }
 
-    let source = PathBuf::from(request.source_path.trim());
+    let source = sources.first().context("请选择待压缩的文件或目录")?.clone();
+    let source_bytes = collection.map_or_else(
+        || {
+            directory_plan.map_or_else(
+                || {
+                    fs::metadata(fs_access_path(&source)?)
+                        .map(|meta| meta.len())
+                        .map_err(anyhow::Error::from)
+                },
+                |plan| Ok(plan.source_bytes),
+            )
+        },
+        |plan| Ok(plan.source_bytes),
+    )?;
     let password = normalize_password(request.password.clone());
     let host_exe = std::env::current_exe().context("无法定位当前程序")?;
     if output == host_exe {
@@ -86,6 +101,8 @@ pub(super) fn compress_sfx_archive_sync(
 
     let started = Instant::now();
     let sfx_source = SfxSource {
+        collection,
+        directory_plan,
         path: &source,
         level: request.level.unwrap_or(8).clamp(1, 22),
         include_root_dir: request.include_root_dir.unwrap_or(true),
@@ -118,13 +135,20 @@ pub(super) fn compress_sfx_archive_sync(
     check_abort(state.as_ref())?;
     if delete_source_after {
         reporter.phase("cleanup");
-        maybe_delete_source(&source, enable_logging, &reporter)?;
+        for source in sources {
+            check_abort(state.as_ref())?;
+            maybe_delete_source(source, enable_logging, &reporter)?;
+        }
     }
 
     reporter.finish();
     Ok(OperationReport {
         operation: "compress".to_string(),
-        source_path: path_to_string(&source),
+        source_path: sources
+            .iter()
+            .map(|source| path_to_string(source))
+            .collect::<Vec<_>>()
+            .join("\n"),
         output_path: path_to_string(&output),
         source_bytes,
         output_bytes: outcome.output_bytes,
@@ -139,6 +163,8 @@ pub(super) fn compress_sfx_archive_sync(
 /// 待压缩源及其压缩、进度、取消上下文
 /// The source being compressed plus its compression, progress and abort context.
 struct SfxSource<'a> {
+    collection: Option<&'a CollectionPlan>,
+    directory_plan: Option<&'a DirectoryPlan>,
     path: &'a Path,
     level: i32,
     include_root_dir: bool,
@@ -200,9 +226,10 @@ impl SfxStaging {
     /// staging; returns once the zstd workers drain.
     fn write_payload(&mut self, is_dir: bool, source: &SfxSource) -> Result<()> {
         let job = CompressJob {
+            collection: source.collection,
+            directory_plan: source.directory_plan,
             level: source.level,
             include_root_dir: source.include_root_dir,
-            source_bytes: source.source_bytes,
             reporter: source.reporter,
             state: source.state,
             threads: source.threads,
@@ -356,9 +383,10 @@ fn build_sfx_streamed(
     let source_bytes = source.source_bytes;
     let source_access = fs_access_path(source.path)
         .with_context(|| format!("无法准备源路径: {}", source.path.display()))?;
-    let is_dir = fs::metadata(&source_access)
-        .with_context(|| format!("源路径不存在或无法访问: {}", source.path.display()))?
-        .is_dir();
+    let is_dir = source.collection.is_some()
+        || fs::metadata(&source_access)
+            .with_context(|| format!("源路径不存在或无法访问: {}", source.path.display()))?
+            .is_dir();
     let kind = if is_dir {
         ArchiveKind::TarZst
     } else {
@@ -368,11 +396,19 @@ fn build_sfx_streamed(
     let parent = output_parent(output_exe);
     let reporter = source.reporter;
     let state = source.state;
-    let source_name = source
-        .path
-        .file_name()
-        .map(|v| v.to_string_lossy().to_string())
-        .unwrap_or_else(|| "archive".to_string());
+    let source_name = if source.collection.is_some() {
+        let name = output_exe
+            .file_stem()
+            .context("输出名称为空")?
+            .to_string_lossy();
+        strip_suffix_ci(&name, ".sfx").to_string()
+    } else {
+        source
+            .path
+            .file_name()
+            .map(|name| name.to_string_lossy().to_string())
+            .unwrap_or_else(|| "archive".to_string())
+    };
 
     if source_bytes >= sidecar_threshold {
         let mut staging = SfxStaging::new_in(parent)?;
@@ -653,7 +689,7 @@ fn extract_embedded_archive_from_path(
         .output_path
         .map(|value| PathBuf::from(value.trim()))
         .filter(|value| !value.as_os_str().is_empty())
-        .with_context(|| "请选择解压目标目录")?;
+        .unwrap_or_else(|| output_parent(host_path).to_path_buf());
     fs::create_dir_all(&output_root)
         .with_context(|| format!("无法创建解压目录: {}", output_root.display()))?;
     // 名称来自归档，即来自构建 SFX 的一方。原样拼接会让 `../../evil` 或 `C:/Windows/x`
@@ -879,9 +915,10 @@ mod tests {
         let hash = Arc::new(Mutex::new(blake3::Hasher::new()));
         let sink = create_output_sink(archive, password, None, hash).expect("output sink");
         let job = CompressJob {
+            collection: None,
+            directory_plan: None,
             level: 8,
             include_root_dir: true,
-            source_bytes: 0,
             reporter: &reporter,
             state: None,
             threads: Some(1),
@@ -914,6 +951,8 @@ mod tests {
         let source_bytes = fs::metadata(source).unwrap().len();
         let reporter = ProgressReporter::new(None, "compress", source_bytes);
         let sfx_source = SfxSource {
+            collection: None,
+            directory_plan: None,
             path: source,
             level: 8,
             include_root_dir: true,
@@ -952,6 +991,104 @@ mod tests {
         let source = temp.join("src");
         fs::write(&source, content).expect("write source");
         build_sfx(temp, &source, password, 0, "out.sfx.exe")
+    }
+
+    #[test]
+    fn collection_sfx_extracts_all_files_in_both_layouts() {
+        for threshold in [0, u64::MAX] {
+            for password in [None, Some("password")] {
+                let temp = tempfile::tempdir().unwrap();
+                let first = temp.path().join("first.txt");
+                let second = temp.path().join("second.txt");
+                fs::write(&first, b"first").unwrap();
+                fs::write(&second, b"second").unwrap();
+                let collection = CollectionPlan::read(&[first.clone(), second], None).unwrap();
+                let template = temp.path().join("template.exe");
+                fs::write(&template, b"MZ-test-template").unwrap();
+                let output = temp.path().join("bundle.sfx.exe");
+                let reporter = ProgressReporter::new(None, "compress", collection.source_bytes);
+                let source = SfxSource {
+                    collection: Some(&collection),
+                    directory_plan: None,
+                    path: &first,
+                    level: 1,
+                    include_root_dir: false,
+                    password,
+                    reporter: &reporter,
+                    state: None,
+                    threads: Some(1),
+                    source_bytes: collection.source_bytes,
+                };
+                build_sfx_streamed(&template, &source, &output, threshold).unwrap();
+                let destination = temp.path().join("restore");
+                let restored = extract_embedded_archive_from_path(
+                    &output,
+                    EmbeddedDecompressRequest {
+                        output_path: Some(path_to_string(&destination)),
+                        password: password.map(str::to_string),
+                    },
+                    None,
+                    None,
+                )
+                .unwrap();
+                assert_eq!(restored.output_bytes, 11);
+                assert_eq!(
+                    fs::read(destination.join("bundle/first.txt")).unwrap(),
+                    b"first"
+                );
+                assert_eq!(
+                    fs::read(destination.join("bundle/second.txt")).unwrap(),
+                    b"second"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn blank_output_extracts_next_to_sfx_host() {
+        for output_path in [None, Some(""), Some("  \t ")] {
+            for threshold in [0, u64::MAX] {
+                for directory in [false, true] {
+                    let temp = tempfile::tempdir().unwrap();
+                    let source_root = temp.path().join("input");
+                    let host_root = temp.path().join("packages");
+                    fs::create_dir_all(&source_root).unwrap();
+                    fs::create_dir_all(&host_root).unwrap();
+                    let source = source_root.join("original");
+                    let content = if directory {
+                        fs::create_dir_all(&source).unwrap();
+                        source.join("file.txt")
+                    } else {
+                        source.clone()
+                    };
+                    fs::write(&content, b"default SFX destination").unwrap();
+                    let host =
+                        build_sfx(&host_root, &source, Some("pw123"), threshold, "renamed.exe");
+                    let host_bytes = fs::read(&host).unwrap();
+
+                    let report = extract_embedded_archive_from_path(
+                        &host,
+                        EmbeddedDecompressRequest {
+                            output_path: output_path.map(str::to_string),
+                            password: Some("pw123".to_string()),
+                        },
+                        None,
+                        None,
+                    )
+                    .unwrap();
+                    let expected = host_root.join("original");
+                    assert_eq!(Path::new(&report.output_path), expected);
+                    let extracted = if directory {
+                        expected.join("original/file.txt")
+                    } else {
+                        expected
+                    };
+                    assert_eq!(fs::read(extracted).unwrap(), b"default SFX destination");
+                    assert_eq!(fs::read(&host).unwrap(), host_bytes);
+                    assert_eq!(fs::read(&content).unwrap(), b"default SFX destination");
+                }
+            }
+        }
     }
 
     #[test]
