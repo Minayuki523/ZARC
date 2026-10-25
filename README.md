@@ -1,5 +1,7 @@
 # ZARC
 
+简体中文 · [English](README.en.md)
+
 一款基于 Rust 开发的Zstd解压缩工具，使用 Zstandard算法 压缩文件和目录，支持密码加密、分卷、自解压程序和压缩等级测试。
 
 ![ZARC 压缩界面](assets/screenshots/main.png)
