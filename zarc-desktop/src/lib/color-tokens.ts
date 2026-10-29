@@ -35,9 +35,9 @@ export function colorTokens(hex: string, mode: 'dark' | 'light'): Record<string,
   return {
     '--zarc-color': hex,
     '--zarc-canvas': canvas,
-    '--zarc-panel': alpha(panel, dark ? 0.82 : 0.88),
+    '--zarc-panel': panel,
     '--zarc-panel-solid': panel,
-    '--zarc-panel-raised': alpha(raised, 0.94),
+    '--zarc-panel-raised': raised,
     '--zarc-inset': alpha(ink, dark ? 0.06 : 0.045),
     '--zarc-inset-strong': alpha(ink, dark ? 0.12 : 0.09),
     '--zarc-line': alpha(ink, dark ? 0.16 : 0.13),
@@ -51,10 +51,6 @@ export function colorTokens(hex: string, mode: 'dark' | 'light'): Record<string,
     '--zarc-accent-strong': hover,
     '--zarc-accent-soft': tone(dark ? 0.85 : 0.8),
     '--zarc-accent-wash': wash,
-    '--zarc-accent-fg': foreground,
-    '--zarc-aurora-1': alpha(tone(dark ? 0.5 : 0.8, Math.min(seed.c * 1.2, 0.16)), dark ? 0.24 : 0.35),
-    '--zarc-aurora-2': alpha(tone(dark ? 0.4 : 0.87, Math.min(seed.c, 0.12)), dark ? 0.18 : 0.24),
-    '--zarc-aurora-3': alpha(tone(dark ? 0.45 : 0.9, surfaceChroma), dark ? 0.12 : 0.2),
-    '--zarc-shadow-glow': `0 10px 30px -10px ${alpha(hex, 0.35)}`
+    '--zarc-accent-fg': foreground
   };
 }

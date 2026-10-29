@@ -102,7 +102,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 animate-[var(--animate-rise)]">
+<div class="flex flex-col gap-4">
   <Card title={t('benchmark.settingsCard.title')} icon="benchmark">
     {#snippet actions()}
       <Tag tone={source ? 'accent' : 'neutral'}>{source ? t(kind === 'folder' ? 'kind.folder' : 'kind.file') : t('notSelected')}</Tag>
@@ -169,7 +169,7 @@
             {task.aborting ? t('task.stopping') : t('task.stop')}
           </Button>
         {/if}
-        <span class="ml-auto text-[0.7rem] text-fg-faint">Ctrl + Enter</span>
+        <span class="ml-auto text-xs text-fg-faint">Ctrl + Enter</span>
       </div>
     </div>
   </Card>
@@ -195,27 +195,27 @@
       <div class="flex flex-col gap-4">
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <div class="rounded-control bg-accent-wash px-3 py-3 text-center">
-            <div class="text-[0.7rem] text-fg-faint">{t('benchmark.recommendedLevel')}</div>
-            <div class="mt-1 text-xl font-extrabold text-accent-ink tabular-nums">
+            <div class="text-xs text-fg-faint">{t('benchmark.recommendedLevel')}</div>
+            <div class="mt-1 text-lg font-extrabold text-accent-ink tabular-nums">
               L{rep.recommendedLevel}
             </div>
           </div>
           <div class="rounded-control bg-inset px-3 py-3 text-center">
-            <div class="text-[0.7rem] text-fg-faint">{t('benchmark.sampleSize')}</div>
-            <div class="mt-1 text-xl font-extrabold text-fg tabular-nums">
+            <div class="text-xs text-fg-faint">{t('benchmark.sampleSize')}</div>
+            <div class="mt-1 text-lg font-extrabold text-fg tabular-nums">
               {formatBytes(rep.sampleBytes)}
             </div>
           </div>
           <div class="rounded-control bg-inset px-3 py-3 text-center">
-            <div class="text-[0.7rem] text-fg-faint">{t('benchmark.peakThroughput')}</div>
-            <div class="mt-1 text-xl font-extrabold text-fg tabular-nums">
+            <div class="text-xs text-fg-faint">{t('benchmark.peakThroughput')}</div>
+            <div class="mt-1 text-lg font-extrabold text-fg tabular-nums">
               {bestThroughput.toFixed(0)}
               <span class="text-xs font-medium text-fg-faint">MiB/s</span>
             </div>
           </div>
           <div class="rounded-control bg-inset px-3 py-3 text-center">
-            <div class="text-[0.7rem] text-fg-faint">{t('benchmark.bestRatio')}</div>
-            <div class="mt-1 text-xl font-extrabold text-fg tabular-nums">
+            <div class="text-xs text-fg-faint">{t('benchmark.bestRatio')}</div>
+            <div class="mt-1 text-lg font-extrabold text-fg tabular-nums">
               {bestRatio.toFixed(1)}<span class="text-xs font-medium text-fg-faint">%</span>
             </div>
           </div>
@@ -229,7 +229,7 @@
         {/if}
 
         <div class="flex flex-col gap-1">
-          <div class="flex items-center gap-3 px-2 text-[0.65rem] tracking-wide text-fg-faint">
+          <div class="flex items-center gap-3 px-2 text-xs tracking-wide text-fg-faint">
             <span class="w-9">{t('benchmark.col.level')}</span>
             <span class="flex-1">{t('benchmark.col.size')}</span>
             <span class="flex-1">{t('benchmark.col.throughput')}</span>
@@ -258,7 +258,7 @@
                     style="width: {ratioWidth(row.ratioPercent)}%"
                   ></div>
                 </div>
-                <span class="w-12 shrink-0 text-right text-[0.7rem] text-fg-faint tabular-nums">
+                <span class="w-12 shrink-0 text-right text-xs text-fg-faint tabular-nums">
                   {row.ratioPercent.toFixed(1)}%
                 </span>
               </div>
@@ -270,12 +270,12 @@
                     style="width: {throughputWidth(row.meanThroughputMiBs)}%"
                   ></div>
                 </div>
-                <span class="w-16 shrink-0 text-right text-[0.7rem] text-fg-faint tabular-nums">
+                <span class="w-16 shrink-0 text-right text-xs text-fg-faint tabular-nums">
                   {row.meanThroughputMiBs.toFixed(0)} MiB/s
                 </span>
               </div>
 
-              <span class="w-16 text-right text-[0.7rem] text-fg-faint tabular-nums">
+              <span class="w-16 text-right text-xs text-fg-faint tabular-nums">
                 {formatDuration(row.meanMs)}
               </span>
             </div>

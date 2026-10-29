@@ -54,20 +54,15 @@
   color-scheme: light;
 
   --zarc-canvas: oklch(0.975 0.006 250);
-  --zarc-aurora-1: oklch(0.88 0.075 190 / 0.75);
-  --zarc-aurora-2: oklch(0.89 0.080 290 / 0.62);
-  --zarc-aurora-3: oklch(0.92 0.060 60 / 0.45);
 
-  --zarc-panel: oklch(1 0 0 / 0.72);
+  --zarc-panel: oklch(0.995 0.003 250);
   --zarc-panel-solid: oklch(0.995 0.003 250);
-  --zarc-panel-raised: oklch(1 0 0 / 0.9);
+  --zarc-panel-raised: oklch(1 0 0);
   --zarc-inset: oklch(0.55 0.02 250 / 0.055);
   --zarc-inset-strong: oklch(0.55 0.02 250 / 0.1);
 
   --zarc-line: oklch(0.45 0.02 250 / 0.13);
   --zarc-line-strong: oklch(0.45 0.02 250 / 0.22);
-  /* 玻璃面板顶部边缘的高光，赋予真实的厚度感。 / Highlight along the top edge of glass panels, giving them a sense of real thickness. */
-  --zarc-rim: oklch(1 0 0 / 0.85);
 
   --zarc-fg: oklch(0.24 0.022 258);
   --zarc-fg-soft: oklch(0.47 0.02 258);
@@ -86,30 +81,23 @@
   --zarc-danger: oklch(0.58 0.205 25);
   --zarc-info: oklch(0.58 0.135 255);
 
-  --zarc-shadow-soft: 0 1px 2px oklch(0.3 0.02 250 / 0.05),
-    0 12px 32px -14px oklch(0.3 0.02 250 / 0.22);
-  --zarc-shadow-lift: 0 2px 4px oklch(0.3 0.02 250 / 0.06),
-    0 22px 48px -18px oklch(0.3 0.02 250 / 0.3);
-  --zarc-shadow-glow: 0 10px 30px -10px oklch(0.62 0.128 192 / 0.55);
+  --zarc-shadow-soft: none;
+  --zarc-shadow-lift: 0 8px 24px oklch(0 0 0 / 0.16);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
   --zarc-canvas: oklch(0.165 0.014 262);
-  --zarc-aurora-1: oklch(0.48 0.105 190 / 0.34);
-  --zarc-aurora-2: oklch(0.44 0.115 292 / 0.3);
-  --zarc-aurora-3: oklch(0.5 0.09 60 / 0.16);
 
-  --zarc-panel: oklch(0.245 0.016 262 / 0.62);
+  --zarc-panel: oklch(0.215 0.016 262);
   --zarc-panel-solid: oklch(0.215 0.016 262);
-  --zarc-panel-raised: oklch(0.275 0.017 262 / 0.8);
+  --zarc-panel-raised: oklch(0.275 0.017 262);
   --zarc-inset: oklch(1 0 0 / 0.045);
   --zarc-inset-strong: oklch(1 0 0 / 0.085);
 
   --zarc-line: oklch(1 0 0 / 0.085);
   --zarc-line-strong: oklch(1 0 0 / 0.15);
-  --zarc-rim: oklch(1 0 0 / 0.1);
 
   --zarc-fg: oklch(0.965 0.005 250);
   --zarc-fg-soft: oklch(0.775 0.014 252);
@@ -126,9 +114,8 @@
   --zarc-danger: oklch(0.7 0.185 22);
   --zarc-info: oklch(0.75 0.12 255);
 
-  --zarc-shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3), 0 14px 34px -16px oklch(0 0 0 / 0.65);
-  --zarc-shadow-lift: 0 2px 6px oklch(0 0 0 / 0.35), 0 26px 54px -20px oklch(0 0 0 / 0.75);
-  --zarc-shadow-glow: 0 10px 32px -12px oklch(0.78 0.125 190 / 0.45);
+  --zarc-shadow-soft: none;
+  --zarc-shadow-lift: 0 8px 24px oklch(0 0 0 / 0.16);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -177,8 +164,8 @@
   --color-danger: var(--zarc-danger);
   --color-info: var(--zarc-info);
 
-  --radius-panel: 1.25rem;
-  --radius-control: 0.75rem;
+  --radius-panel: 1rem;
+  --radius-control: 0.5rem;
   --radius-pill: 9999px;
 
   --shadow-soft: var(--zarc-shadow-soft);
@@ -314,28 +301,15 @@
 @layer components {
   .panel {
     background: var(--zarc-panel);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid var(--zarc-line);
-    box-shadow: var(--zarc-shadow-soft), inset 0 1px 0 0 var(--zarc-rim);
+    border: 0.5px solid var(--zarc-line);
   }
 
   .panel-solid {
     background: var(--zarc-panel-solid);
-    border: 1px solid var(--zarc-line);
+    border: 0.5px solid var(--zarc-line);
     box-shadow: var(--zarc-shadow-soft);
   }
 
-  /* 静态渐变替代独立模糊图层。 / Static gradients replace separate blur layers. */
-  .ambient {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse 38rem 32rem at 0% 0%, var(--zarc-aurora-1), transparent 75%),
-      radial-gradient(ellipse 34rem 30rem at 100% 48%, var(--zarc-aurora-2), transparent 75%),
-      radial-gradient(ellipse 32rem 28rem at 48% 110%, var(--zarc-aurora-3), transparent 75%);
-  }
 
   /* 输入控件的统一外观；避免在十几处重复冗长的工具类字符串。 / Shared look for input controls; avoids repeating long utility strings in a dozen places. */
   .control {
@@ -386,16 +360,6 @@
   }
 }
 
-@layer utilities {
-  /* 进度条上的流动高光。 / Flowing highlight on progress bars. */
-  .sheen::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.4), transparent);
-    animation: var(--animate-shimmer);
-  }
-}
 
 /* 遵循系统的 "prefers-reduced-motion" 设置：关闭装饰动画，保留状态反馈。 / Honor the system "prefers-reduced-motion" setting: turn off decorative animations, keep status feedback. */
 @media (prefers-reduced-motion: reduce) {

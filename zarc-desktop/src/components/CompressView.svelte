@@ -160,14 +160,14 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 animate-[var(--animate-rise)]">
-  <Card title={t('compress.sourceCard.title')} subtitle={t('compress.sourceCard.subtitle')} icon="folder">
+<div class="flex flex-col gap-4">
+  <Card title={t('compress.sourceCard.title')} icon="folder">
     {#snippet actions()}
       <Tag tone={source ? 'accent' : 'neutral'}>{multiple ? t('compress.selectionCount', { count: sources.length }) : source ? t(kind === 'folder' ? 'kind.folder' : 'kind.file') : t('notSelected')}</Tag>
     {/snippet}
 
     <div class="flex flex-col gap-4">
-      <Field label={t('compress.sourceCard.title')} error={sourceError}>
+      <Field label={t('compress.sourcePath')} error={sourceError}>
         {#snippet aside()}
           {#if app.compressInfoLoading}
             {t('compress.measuring')}
@@ -231,7 +231,7 @@
 
   <OutputPreview {source} output="" sourcePaths={sources} {archiveName} outputDirectory={output} encrypted={encrypt} {outputKind} splitSizeMib={splitSize} />
 
-  <Card title={t('compress.settingsCard.title')} subtitle={t('compress.settingsCard.subtitle')} icon="sliders">
+  <Card title={t('compress.settingsCard.title')} icon="sliders">
     <div class="flex flex-col gap-5">
       <Field label={t('compress.outputType')} hint={isSfx
         ? t('compress.outputTypeHint.sfx')
@@ -252,7 +252,7 @@
         />
       </Field>
 
-      <div class="grid grid-cols-2 gap-2 rounded-panel bg-inset p-1.5">
+      <div class="grid grid-cols-2 gap-2 rounded-[0.875rem] bg-inset p-1.5">
         <Toggle
           bind:checked={includeRootDir}
           label={t('compress.includeRootDir')}
@@ -285,7 +285,7 @@
           aria-expanded={advanced}
           class="flex w-full items-center gap-2 rounded-control px-1 py-2 text-xs font-semibold text-fg-soft transition-colors hover:text-fg"
         >
-          <span class="transition-transform duration-200 {advanced ? 'rotate-90' : ''}">
+          <span class="transition-transform duration-150 {advanced ? 'rotate-90' : ''}">
             <Icon name="chevronRight" size={14} />
           </span>
           {t('compress.advanced')}
@@ -305,7 +305,7 @@
               </Field>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 rounded-panel bg-inset p-1.5">
+            <div class="grid grid-cols-2 gap-2 rounded-[0.875rem] bg-inset p-1.5">
               <Toggle
                 bind:checked={enableLogging}
                 label={t('compress.writeLog')}
@@ -333,7 +333,7 @@
             {task.aborting ? t('task.stopping') : t('task.stop')}
           </Button>
         {/if}
-        <span class="ml-auto text-[0.7rem] text-fg-faint">Ctrl + Enter</span>
+        <span class="ml-auto text-xs text-fg-faint">Ctrl + Enter</span>
       </div>
     </div>
   </Card>

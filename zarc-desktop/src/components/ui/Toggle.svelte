@@ -37,12 +37,12 @@
   class="flex w-full items-start gap-3 rounded-control px-3 py-2.5 text-left transition-colors hover:bg-inset disabled:pointer-events-none disabled:opacity-45"
 >
   <span
-    class="relative mt-0.5 h-[1.35rem] w-10 shrink-0 rounded-full transition-colors duration-300 {checked
+    class="relative mt-0.5 h-[1.35rem] w-10 shrink-0 rounded-full transition-colors duration-150 {checked
       ? onColor
       : 'bg-inset-strong'}"
   >
     <span
-      class="absolute top-[0.175rem] left-[0.175rem] h-4 w-4 rounded-full {checked && !danger ? 'bg-accent-fg' : 'bg-white'} shadow-sm transition-transform duration-300 {checked
+      class="absolute top-[0.175rem] left-[0.175rem] h-4 w-4 rounded-full {checked && !danger ? 'bg-accent-fg' : 'bg-white'} shadow-sm transition-transform duration-150 {checked
         ? 'translate-x-[1.15rem]'
         : ''}"
     ></span>

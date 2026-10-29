@@ -23,7 +23,7 @@
   let plainText = $derived(fields.map((f) => `${f.label}: ${f.value}`).join('\n'));
 </script>
 
-<Card {title} icon="checkCircle" subtitle={report.operation} class="animate-[var(--animate-rise)]">
+<Card {title} icon="checkCircle" subtitle={report.operation} class="">
   {#snippet actions()}
     <Button variant="subtle" size="sm" icon="folder" onclick={() => api.revealOutput(report.outputPath).catch((e) => toasts.error(t('audit.openFailed'), normalizeError(e)))}>{t('audit.openFolder')}</Button>
     <CopyButton text={plainText} label={t('shell.copyFullReport')} />
@@ -33,7 +33,7 @@
   <div class="grid grid-cols-3 gap-3">
     {#each highlights as item (item.label)}
       <div class="rounded-control bg-inset px-3 py-3 text-center">
-        <div class="text-[0.7rem] tracking-wide text-fg-faint">{item.label}</div>
+        <div class="text-xs tracking-wide text-fg-faint">{item.label}</div>
         <div class="mt-1 text-lg font-extrabold tracking-tight text-fg tabular-nums">
           {item.value}
         </div>
@@ -47,7 +47,7 @@
       <div class="flex items-start gap-3 py-2">
         <dt class="w-20 shrink-0 pt-px text-fg-faint">{field.label}</dt>
         <dd
-          class="min-w-0 flex-1 break-all text-fg-soft {field.mono ? 'mono text-[0.7rem]' : ''}"
+          class="min-w-0 flex-1 break-all text-fg-soft {field.mono ? 'mono text-xs' : ''}"
           data-selectable
         >
           {field.value}

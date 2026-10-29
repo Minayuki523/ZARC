@@ -64,7 +64,6 @@
 </script>
 
 <div class="relative h-full w-full overflow-hidden bg-canvas">
-  <div class="ambient" aria-hidden="true"></div>
 
   <div class="relative z-10 flex h-full flex-col">
     <TitleBar />

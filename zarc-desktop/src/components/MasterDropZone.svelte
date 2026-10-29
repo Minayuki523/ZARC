@@ -16,7 +16,7 @@
       out:scale={{ duration: 120, start: 0.97 }}
     >
       <span
-        class="flex h-16 w-16 animate-[var(--animate-float)] items-center justify-center rounded-full bg-accent-wash text-accent-ink"
+        class="flex h-16 w-16 items-center justify-center rounded-full bg-accent-wash text-accent-ink"
       >
         <Icon name="dropIn" size={30} stroke={1.6} />
       </span>

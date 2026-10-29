@@ -31,8 +31,8 @@
 
   const base =
     'inline-flex select-none items-center justify-center gap-2 rounded-control font-semibold ' +
-    'transition-[transform,background-color,color,box-shadow,border-color] duration-200 ' +
-    'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45';
+    'transition-[background-color,color,border-color] duration-150 ' +
+    'disabled:pointer-events-none disabled:opacity-45';
 
   const sizes: Record<Size, string> = {
     sm: 'px-3 py-1.5 text-xs',
@@ -41,11 +41,11 @@
 
   const variants: Record<Variant, string> = {
     primary:
-      'border border-accent-edge bg-accent text-accent-fg shadow-[var(--shadow-glow)] hover:bg-accent-strong hover:-translate-y-px',
+      'border border-accent-edge bg-accent text-accent-fg hover:bg-accent-strong',
     danger:
-      'bg-danger text-white shadow-[0_8px_22px_-10px_var(--color-danger)] hover:brightness-110 hover:-translate-y-px',
+      'bg-danger text-white hover:brightness-110',
     ghost:
-      'border border-line-strong bg-panel-solid text-fg-soft hover:-translate-y-px hover:border-accent-ink/60 hover:text-fg',
+      'border border-line-strong bg-panel-solid text-fg-soft hover:border-accent-ink/60 hover:text-fg',
     subtle: 'bg-transparent text-fg-soft hover:bg-inset hover:text-fg'
   };
 </script>

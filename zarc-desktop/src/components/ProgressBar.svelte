@@ -59,29 +59,26 @@
       <div class="absolute inset-y-0 left-0 w-1/3 animate-[var(--animate-indeterminate)] rounded-pill bg-accent-ink"></div>
     {:else}
       <div
-        class="absolute inset-y-0 left-0 overflow-hidden rounded-pill transition-[width] duration-300 ease-out {barTone}"
+        class="absolute inset-y-0 left-0 overflow-hidden rounded-pill transition-[width] duration-150 ease-out {barTone}"
         style="width: {width}"
       >
-        {#if !progress.done}
-          <span class="sheen absolute inset-0"></span>
-        {/if}
       </div>
     {/if}
   </div>
 
   {#if progress.error}
-    <p class="line-clamp-3 text-[0.7rem] leading-relaxed break-words text-danger" data-selectable>
+    <p class="line-clamp-3 text-xs leading-relaxed break-words text-danger" data-selectable>
       {progress.error}
     </p>
   {:else if !compact}
-    <div class="flex items-center gap-1.5 text-[0.7rem] text-fg-faint tabular-nums">
+    <div class="flex items-center gap-1.5 text-xs text-fg-faint tabular-nums">
       <span>{formatBytes(progress.processedBytes)}</span>
       <span class="opacity-50">/</span>
       <span>{progress.totalBytes > 0 ? formatBytes(progress.totalBytes) : '—'}</span>
-      <span class="opacity-40">·</span>
+      <span class="w-2" aria-hidden="true"></span>
       <span>{progress.throughputMiBs.toFixed(1)} MiB/s</span>
       {#if !progress.done}
-        <span class="opacity-40">·</span>
+        <span class="w-2" aria-hidden="true"></span>
         <span>{t('shell.etaRemaining', { eta: etaText })}</span>
       {/if}
     </div>

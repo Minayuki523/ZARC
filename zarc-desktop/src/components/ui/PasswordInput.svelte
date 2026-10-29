@@ -75,7 +75,7 @@
       <div class="flex flex-1 gap-1">
         {#each [0, 1, 2, 3] as index (index)}
           <span
-            class="h-1 flex-1 rounded-full transition-colors duration-300 {index < strength.score
+            class="h-1 flex-1 rounded-full transition-colors duration-150 {index < strength.score
               ? barColors[strength.score]
               : 'bg-inset-strong'}"
           ></span>

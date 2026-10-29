@@ -48,7 +48,7 @@
       aria-modal="true"
       aria-label={t('about.title')}
       tabindex="-1"
-      class="panel relative flex w-full max-w-md flex-col gap-5 rounded-panel p-6 animate-[var(--animate-rise)]"
+      class="panel relative flex w-full max-w-md flex-col gap-5 rounded-panel p-6"
       onkeydown={(e) => e.key === 'Escape' && onClose()}
     >
       <button
@@ -62,14 +62,14 @@
 
       <div class="flex items-center gap-3.5">
         <span
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-accent text-accent-fg shadow-[var(--shadow-glow)]"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-accent text-accent-fg"
         >
           <Icon name="compress" size={22} stroke={2} />
         </span>
         <div class="flex min-w-0 flex-col">
-          <span class="text-xl font-extrabold tracking-tight text-fg">ZARC</span>
+          <span class="text-lg font-extrabold tracking-tight text-fg">ZARC</span>
           <span class="text-xs text-fg-faint">
-            {version ? t('about.version', { version }) : '—'} · {t('shell.tagline')}
+            {version ? t('about.version', { version }) : '—'} / {t('shell.tagline')}
           </span>
         </div>
       </div>
@@ -77,7 +77,7 @@
       <Button icon="refresh" onclick={() => openLink(project.releasesUrl)}>
         {t('about.checkUpdate')}
       </Button>
-      <p class="-mt-3 text-[0.68rem] text-fg-faint">{t('about.updateHint')}</p>
+      <p class="-mt-3 text-xs text-fg-faint">{t('about.updateHint')}</p>
 
       <div class="flex flex-col divide-y divide-line rounded-control bg-inset px-3">
         <button
@@ -103,7 +103,7 @@
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <h3 class="text-[0.68rem] font-bold tracking-[0.12em] text-fg-faint uppercase">
+        <h3 class="text-xs font-bold text-fg-faint">
           {t('about.license.title')}
         </h3>
         <p class="max-h-32 overflow-y-auto text-xs leading-relaxed text-fg-soft" data-selectable>

@@ -119,7 +119,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 animate-[var(--animate-rise)]">
+<div class="flex flex-col gap-4">
   <SfxBanner />
 
   <Card
@@ -205,7 +205,7 @@
             {task.aborting ? t('task.stopping') : t('task.stop')}
           </Button>
         {/if}
-        <span class="ml-auto text-[0.7rem] text-fg-faint">Ctrl + Enter</span>
+        <span class="ml-auto text-xs text-fg-faint">Ctrl + Enter</span>
       </div>
     </div>
   </Card>

@@ -35,7 +35,7 @@
 >
   <div class="flex max-h-[80vh] flex-col">
     <div class="flex shrink-0 items-center justify-between gap-4 border-b border-line px-5 py-4">
-      <h2 id="color-dialog-title" class="text-base font-bold">{t('shell.colors.title')}</h2>
+      <h2 id="color-dialog-title" class="text-sm font-bold">{t('shell.colors.title')}</h2>
       <button
         type="button"
         onclick={onClose}
@@ -78,7 +78,7 @@
             <span class="h-8 w-8 shrink-0 rounded-lg border border-black/10" style:background={color.hex}></span>
             <span class="min-w-0 flex-1">
               <span class="block truncate text-xs font-semibold">{color.name}</span>
-              <span class="mt-0.5 block font-mono text-[0.65rem] text-fg-faint">{color.hex}</span>
+              <span class="mt-0.5 block font-mono text-xs text-fg-faint">{color.hex}</span>
             </span>
             {#if theme.color === color.id}<Icon name="check" size={14} class="shrink-0 text-accent-ink" />{/if}
           </button>

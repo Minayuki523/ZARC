@@ -13,16 +13,16 @@
   let { tone = 'accent', icon, children }: Props = $props();
 
   const tones: Record<Tone, string> = {
-    accent: 'bg-accent-wash text-accent-ink',
-    neutral: 'bg-inset text-fg-soft',
-    success: 'bg-success/12 text-success',
-    warning: 'bg-warning/15 text-warning',
-    danger: 'bg-danger/12 text-danger'
+    accent: 'text-accent-ink',
+    neutral: 'text-fg-soft',
+    success: 'text-success',
+    warning: 'text-warning',
+    danger: 'text-danger'
   };
 </script>
 
 <span
-  class="inline-flex shrink-0 items-center gap-1.5 rounded-pill px-2.5 py-1 text-xs font-semibold whitespace-nowrap {tones[
+  class="inline-flex shrink-0 items-center gap-1.5 py-1 text-xs font-semibold whitespace-nowrap {tones[
     tone
   ]}"
 >

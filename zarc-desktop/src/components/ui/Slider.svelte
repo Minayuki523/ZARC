@@ -46,7 +46,7 @@
   />
 
   {#if marks.length > 0}
-    <div class="relative h-4 text-[0.65rem] text-fg-faint">
+    <div class="relative h-4 text-xs text-fg-faint">
       {#each marks as mark (mark.at)}
         {@const offset = ((mark.at - min) / (max - min)) * 100}
         <span

@@ -19,11 +19,11 @@
 
 <section class="panel rounded-panel {klass}">
   {#if hasHeader}
-    <header class="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+    <header class="flex items-start justify-between gap-4 px-5 pt-5">
       <div class="flex min-w-0 items-center gap-3">
         {#if icon}
           <span
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-accent-wash text-accent-ink"
+            class="flex shrink-0 items-center justify-center text-fg-soft"
           >
             <Icon name={icon} size={18} />
           </span>

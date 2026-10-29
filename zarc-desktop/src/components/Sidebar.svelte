@@ -26,13 +26,13 @@
 <aside class="flex h-full w-52 shrink-0 flex-col gap-1 px-3 py-4">
   <div class="flex items-center gap-2.5 px-2 pt-1 pb-5">
     <span
-      class="flex h-9 w-9 items-center justify-center rounded-control bg-accent text-accent-fg shadow-[var(--shadow-glow)]"
+      class="flex h-9 w-9 items-center justify-center rounded-control bg-accent text-accent-fg"
     >
       <Icon name="compress" size={19} stroke={2} />
     </span>
     <span class="flex flex-col leading-none">
-      <span class="text-[0.95rem] font-extrabold tracking-tight text-fg">ZARC</span>
-      <span class="mt-1 text-[0.65rem] tracking-wide text-fg-faint">{t('shell.tagline')}</span>
+      <span class="text-sm font-extrabold tracking-tight text-fg">ZARC</span>
+      <span class="mt-1 text-xs tracking-wide text-fg-faint">{t('shell.tagline')}</span>
     </span>
   </div>
 
@@ -45,16 +45,10 @@
         aria-current={active ? 'page' : undefined}
         onclick={() => app.setView(item.id)}
         title={item.hint}
-        class="group relative flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm transition-colors duration-200 {active
+        class="group relative flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm transition-colors duration-150 {active
           ? 'bg-accent-wash text-accent-ink'
           : 'text-fg-soft hover:bg-inset hover:text-fg'}"
       >
-        <!-- 细指示条比方块填充更克制，且保留图标自身颜色。 / A slim indicator bar is subtler than a filled block and keeps the icon's own color. -->
-        <span
-          class="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-ink transition-opacity duration-200 {active
-            ? 'opacity-100'
-            : 'opacity-0'}"
-        ></span>
 
         {#if running}
           <Spinner size={16} class="text-accent-ink" />

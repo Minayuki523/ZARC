@@ -14,12 +14,12 @@
 
 {#if info}
   <div
-    class="panel flex items-start gap-3.5 rounded-panel p-4 animate-[var(--animate-rise)] {payloadMissing
+    class="panel flex items-start gap-3.5 rounded-panel p-4  {payloadMissing
       ? 'border-warning/50'
       : 'border-accent/30 bg-accent-wash'}"
   >
     <span
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control shadow-[var(--shadow-glow)] {payloadMissing
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control  {payloadMissing
         ? 'bg-warning text-white'
         : 'bg-accent text-accent-fg'}"
     >

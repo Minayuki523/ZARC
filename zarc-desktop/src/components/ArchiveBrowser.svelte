@@ -124,7 +124,7 @@
     <div class="grid grid-cols-2 gap-2">
       {#each stats as stat (stat.label)}
         <div class="rounded-control bg-inset px-3 py-2">
-          <p class="text-[0.65rem] tracking-wide text-fg-faint">{stat.label}</p>
+          <p class="text-xs tracking-wide text-fg-faint">{stat.label}</p>
           <p class="mt-0.5 text-sm font-bold text-fg tabular-nums">{stat.value}</p>
         </div>
       {/each}
@@ -132,8 +132,8 @@
 
     {#if report.hash}
       <div class="flex items-center gap-2 rounded-control bg-inset px-3 py-2">
-        <span class="shrink-0 text-[0.65rem] tracking-wide text-fg-faint">BLAKE3</span>
-        <code class="mono min-w-0 flex-1 truncate text-[0.7rem] text-fg-soft" data-selectable>
+        <span class="shrink-0 text-xs tracking-wide text-fg-faint">BLAKE3</span>
+        <code class="mono min-w-0 flex-1 truncate text-xs text-fg-soft" data-selectable>
           {report.hash}
         </code>
         <CopyButton text={report.hash} label={t('shell.browser.copyHash')} />

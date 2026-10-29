@@ -46,10 +46,10 @@
 <!-- 窗口过窄时隐藏；TaskStrip 接管主列顶部。 / Hidden when the window is too narrow; TaskStrip takes over at the top of the main column. -->
 <aside class="hidden h-full w-[18rem] shrink-0 flex-col gap-3 py-4 pr-4 pl-1 min-[1180px]:flex">
   <div class="flex items-center justify-between px-2">
-    <h2 class="text-[0.68rem] font-bold tracking-[0.12em] text-fg-faint uppercase">{t('shell.taskHub')}</h2>
+    <h2 class="text-xs font-bold text-fg-faint">{t('shell.taskHub')}</h2>
     {#if task.busy}
-      <span class="flex items-center gap-1.5 text-[0.68rem] font-medium text-accent-ink">
-        <span class="h-1.5 w-1.5 animate-[var(--animate-breathe)] rounded-full bg-accent-ink"></span>
+      <span class="flex items-center gap-1.5 text-xs font-medium text-accent-ink">
+        <span class="h-1.5 w-1.5 rounded-full bg-accent-ink"></span>
         {t('shell.running')}
       </span>
     {/if}
@@ -59,8 +59,8 @@
     {@const state = summary(slot)}
     {@const active = running === slot.kind}
     <section
-      class="panel flex flex-col gap-3 rounded-panel p-4 transition-shadow duration-300 {active
-        ? 'shadow-[var(--shadow-glow)] ring-1 ring-accent/35'
+      class="panel flex flex-col gap-3 rounded-panel p-4 transition-shadow duration-150 {active
+        ? 'bg-accent-wash'
         : ''}"
     >
       <div class="flex items-center gap-2.5">
@@ -76,7 +76,7 @@
           {/if}
         </span>
         <span class="flex-1 text-sm font-semibold text-fg">{slot.label}</span>
-        <span class="text-[0.7rem] font-medium {state.tone}">{state.text}</span>
+        <span class="text-xs font-medium {state.tone}">{state.text}</span>
       </div>
 
       {#if slot.progress && expanded(slot)}
@@ -84,7 +84,7 @@
           <ProgressBar progress={slot.progress} label={t('shell.working', { label: slot.label })} />
         </div>
       {:else if active}
-        <p class="text-[0.7rem] text-fg-faint">{t('shell.benchmarkHint')}</p>
+        <p class="text-xs text-fg-faint">{t('shell.benchmarkHint')}</p>
       {/if}
     </section>
   {/each}
@@ -104,9 +104,4 @@
     </div>
   {/if}
 
-  <div class="mt-auto px-2 pt-2">
-    <p class="text-[0.65rem] leading-relaxed text-fg-faint">
-      {t('shell.dropHint')}
-    </p>
-  </div>
 </aside>

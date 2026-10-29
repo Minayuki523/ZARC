@@ -14,7 +14,7 @@
 
 <header class="flex items-start justify-between gap-3 px-1">
   <div class="min-w-0">
-    <h1 class="text-[1.35rem] leading-tight font-extrabold tracking-tight text-fg">{title}</h1>
+    <h1 class="text-[1.375rem] leading-tight font-extrabold tracking-tight text-fg">{title}</h1>
     {#if subtitle}
       <p class="mt-1 text-xs text-fg-faint">{subtitle}</p>
     {/if}
@@ -27,7 +27,7 @@
       onclick={toggleLocale}
       aria-label={t('shell.localeToggle')}
       title={t('shell.localeToggle')}
-      class="panel flex h-8 min-w-8 items-center justify-center rounded-pill px-2.5 text-[0.7rem] font-semibold tracking-wide text-fg-soft transition-colors hover:text-fg"
+      class="panel flex h-8 min-w-8 items-center justify-center rounded-pill px-2.5 text-xs font-semibold tracking-wide text-fg-soft transition-colors hover:text-fg"
     >
       {currentLocale() === 'zh' ? 'EN' : '中文'}
     </button>
